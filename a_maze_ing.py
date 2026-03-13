@@ -19,7 +19,7 @@ class Maze():
         self.entry = entry
         self.exit = exit
         self.output_file = output_file
-    
+
     def create_grid(self):
         x1, y1 = self.entry
         x2, y2 = self.exit
@@ -49,40 +49,36 @@ class Maze():
 # ###
 
 
-# tiles = {
-# 0x0: " ",
-# 0x1: "╵",
-# 0x2: "╶",
-# 0x3: "└",
-# 0x4: "╷",
-# 0x5: "│",
-# 0x6: "┌",
-# 0x7: "├",
-# 0x8: "╴",
-# 0x9: "┘",
-# 0xA: "─",
-# 0xB: "┴",
-# 0xC: "┐",
-# 0xD: "┤",
-# 0xE: "┬",
-# 0xF: "┼",
-# }
-
-
-
 class Cell_Variants():
-    ...
-    
-
+    tiles = {
+        0x0: " ",
+        0x1: "╵",
+        0x2: "╶",
+        0x3: "└",
+        0x4: "╷",
+        0x5: "│",
+        0x6: "┌",
+        0x7: "├",
+        0x8: "╴",
+        0x9: "┘",
+        0xA: "─",
+        0xB: "┴",
+        0xC: "┐",
+        0xD: "┤",
+        0xE: "┬",
+        0xF: "┼",
+    }
 
 
 # class Cell():
 #     def __init__(self, north, south, west, east)
 #         self.
 
+
 class ParsingError(Exception):
     def __init__(self, message: str) -> None:
         self.message = message
+
 
 def parsing(data: str) -> Dict:
     rows = data.split("\n")
@@ -100,7 +96,7 @@ def parsing(data: str) -> Dict:
             elif (
                 entry[0] == "ENTRY" or
                 entry[0] == "EXIT"
-                ):
+            ):
                 ponit_pair = entry[1].split(",")
                 result.update({entry[0]: (int(ponit_pair[0]), int(ponit_pair[1]))})
             elif entry[0] == "OUTPUT_FILE":
@@ -119,6 +115,7 @@ def parsing(data: str) -> Dict:
 
 def validation(data: Dict) -> bool:
     ...
+
 
 def main():
     if len(sys.argv) == 2:
