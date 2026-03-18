@@ -3,6 +3,14 @@ from typing import Dict
 # from sys import argv
 
 
+class Cell():
+    def __init__(self, position: tuple):
+        self.x = position[0]
+        self.y = position[1]
+        self.state = 0000
+        self.special: str | None
+
+
 class Maze():
     def __init__(
             self,
@@ -35,7 +43,9 @@ class Maze():
                     print("#")
                 j += 1
             i += 1
-
+    
+    def create_forty2(self) -> None:
+        ...
 
 # Bit Direction
 # 0 (LSB) North
@@ -47,6 +57,8 @@ class Maze():
 # ###
 # #0#
 # ###
+# 0111
+
 
 
 # tiles = {
@@ -92,24 +104,26 @@ def parsing(data: str) -> Dict:
             continue
         else:
             entry = row.split("=")
-            if (
-                entry[0] == "WIDTH" or
-                entry[0] == "HEIGHT"
-                ):
-                result.update({entry[0]: int(entry[1])})
-            elif (
-                entry[0] == "ENTRY" or
-                entry[0] == "EXIT"
-                ):
-                ponit_pair = entry[1].split(",")
-                result.update({entry[0]: (int(ponit_pair[0]), int(ponit_pair[1]))})
-            elif entry[0] == "OUTPUT_FILE":
-                result.update({entry[0]: entry[1]})
-            elif entry[0] == "PERFECT":
-                if entry[1] == "True":
-                    result.update({entry[0]: True})
-                elif entry[1] == "False":
-                    result.update({entry[0]: False})
+            if len(entry) == 2:
+                if (
+                    entry[0] == "WIDTH" or
+                    entry[0] == "HEIGHT"
+                    ):
+                    result.update({entry[0]: int(entry[1])})
+                elif (
+                    entry[0] == "ENTRY" or
+                    entry[0] == "EXIT"
+                    ):
+                    ponit_pair = entry[1].split(",")
+                    result.update({entry[0]: (int(ponit_pair[0]), int(ponit_pair[1]))})
+                elif entry[0] == "OUTPUT_FILE":
+                    result.update({entry[0]: entry[1]})
+                elif entry[0] == "PERFECT":
+                    if entry[1] == "True":
+                        result.update({entry[0]: True})
+                    elif entry[1] == "False":
+                        result.update({entry[0]: False})
+            
             else:
                 raise ParsingError(f"ParsingError: {row} entry is invalid")
         
@@ -120,16 +134,21 @@ def parsing(data: str) -> Dict:
 def validation(data: Dict) -> bool:
     ...
 
+
 def main():
     if len(sys.argv) == 2:
-        with open(sys.argv[1], "r") as config_file:
-            config_data = config_file.read()
-        # try:
-            data_4_maze = parsing(config_data)
-        # except Exception as e:
-        #     print("Parsing error: ", str(e))
-        #     return
-        # else:
+        if sys.argv[1] == "config.txt":
+            with open(sys.argv[1], "r") as config_file:
+                config_data = config_file.read()
+            # try:
+                data_4_maze = parsing(config_data)
+                print(data_4_maze)
+            # except Exception as e:
+            #     print("Parsing error: ", str(e))
+            #     return
+            # else:
+        else:
+            raise Exception("We are expecting config.txt as an argument")
         my_maze = Maze(**data_4_maze)
         my_maze.create_grid()
             # maze_gen(data_4_maze)
