@@ -8,7 +8,8 @@ class Cell():
         self.x = position[0]
         self.y = position[1]
         self.state = 0000
-        self.special: str | None
+        self.special: str | None = None
+        self.seed: bool = False
 
 
 class Maze():
