@@ -44,7 +44,7 @@ class Maze():
                     print("#")
                 j += 1
             i += 1
-    
+
     def create_forty2(self) -> None:
         ...
 
@@ -59,7 +59,6 @@ class Maze():
 # #0#
 # ###
 # 0111
-
 
 
 # tiles = {
@@ -82,11 +81,8 @@ class Maze():
 # }
 
 
-
 class Cell_Variants():
     ...
-    
-
 
 
 # class Cell():
@@ -96,6 +92,7 @@ class Cell_Variants():
 class ParsingError(Exception):
     def __init__(self, message: str) -> None:
         self.message = message
+
 
 def parsing(data: str) -> Dict:
     rows = data.split("\n")
@@ -124,9 +121,10 @@ def parsing(data: str) -> Dict:
                         result.update({entry[0]: True})
                     elif entry[1] == "False":
                         result.update({entry[0]: False})
-            
             else:
-                raise ParsingError(f"ParsingError: {row} entry is invalid")
+                raise ParsingError(f"To write")
+        else:
+            raise ParsingError(f"ParsingError: {row} entry is invalid")
         
     # check if we have all the parameters and they are correct
     return result
