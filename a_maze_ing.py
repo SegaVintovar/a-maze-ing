@@ -121,10 +121,10 @@ def parsing(data: str) -> Dict:
                         result.update({entry[0]: True})
                     elif entry[1] == "False":
                         result.update({entry[0]: False})
+                else:
+                    raise ParsingError(f"To write")
             else:
-                raise ParsingError(f"To write")
-        else:
-            raise ParsingError(f"ParsingError: {row} entry is invalid")
+                raise ParsingError(f"ParsingError: {row} entry is invalid")
         
     # check if we have all the parameters and they are correct
     return result
