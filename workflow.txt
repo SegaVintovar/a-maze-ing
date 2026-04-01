@@ -1,0 +1,24 @@
+Parsing:
+	using pydantic, validation model
+	return dict to pass into our Maze
+	do we check here if the 42 logo can fit in
+		or during maze generation?
+	do we have to generate a maze if it is too small
+		for the logo.
+Maze:
+	self.grid = []
+
+	it can be genrated as soon as it has received all parameters
+
+
+how to interact with program from the window(termial)
+during the execution
+
+Makefile
+	what it does?
+		1)install and start the venv
+		2)install dependencies(pip / poetry)
+		3)run amazing
+
+Algo
+	IDK - time to explore this
