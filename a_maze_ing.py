@@ -1,5 +1,6 @@
 import sys
 from typing import Dict
+from pydantic import BaseModel, model_validator
 # from sys import argv
 
 
@@ -28,7 +29,7 @@ class Maze():
         self.entry = entry
         self.exit = exit
         self.output_file = output_file
-    
+
     def create_grid(self):
         x1, y1 = self.entry
         x2, y2 = self.exit
@@ -37,12 +38,13 @@ class Maze():
             j = 0
             while j < self.width:
                 if (j, i) == self.entry:
-                    print("S")
-                if (j, i) == self.exit:
-                    print("E")
+                    print("S", end="")
+                elif (j, i) == self.exit:
+                    print("E", end="")
                 else:
-                    print("#")
+                    print("┼", end="")
                 j += 1
+            print()
             i += 1
 
     def create_forty2(self) -> None:
@@ -98,7 +100,7 @@ def parsing(data: str) -> Dict:
     rows = data.split("\n")
     result = {}
     for row in rows:
-        if row[0] == "#" or row == "":
+        if row.startswith("#") or row == "":
             continue
         else:
             entry = row.split("=")
@@ -106,27 +108,28 @@ def parsing(data: str) -> Dict:
                 if (
                     entry[0] == "WIDTH" or
                     entry[0] == "HEIGHT"
-                    ):
-                    result.update({entry[0]: int(entry[1])})
+                        ):
+                    result.update({entry[0].lower(): int(entry[1])})
                 elif (
                     entry[0] == "ENTRY" or
                     entry[0] == "EXIT"
                     ):
                     ponit_pair = entry[1].split(",")
-                    result.update({entry[0]: (int(ponit_pair[0]), int(ponit_pair[1]))})
+                    result.update({entry[0].lower(): (int(ponit_pair[0]), int(ponit_pair[1]))})
                 elif entry[0] == "OUTPUT_FILE":
-                    result.update({entry[0]: entry[1]})
+                    result.update({entry[0].lower(): entry[1]})
                 elif entry[0] == "PERFECT":
                     if entry[1] == "True":
-                        result.update({entry[0]: True})
+                        result.update({entry[0].lower(): True})
                     elif entry[1] == "False":
-                        result.update({entry[0]: False})
+                        result.update({entry[0].lower(): False})
                 else:
-                    raise ParsingError(f"To write")
+                    raise ParsingError(f"Unknown parameter: {row}")
             else:
                 raise ParsingError(f"ParsingError: {row} entry is invalid")
-        
+
     # check if we have all the parameters and they are correct
+    # validation
     return result
 
 
