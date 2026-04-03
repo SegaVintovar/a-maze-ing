@@ -2,6 +2,46 @@ import sys
 from typing import Dict
 from pydantic import BaseModel, model_validator
 # from sys import argv
+import random
+from enum import Enum
+
+
+# Bit Direction
+# 0 (LSB) North
+# 1 East
+# 2 South
+# 3 West
+# 0101 example of horisontal path
+# 1010 example of vertical path
+# ###
+# #0#
+# ###
+# 0111
+
+
+# class CellVariants(Enum):
+#     NULL = (0, 0, 0, 0)
+#     "1" = (0, 0, 0, 1)
+
+#     0x1: "╵",
+#     0x2: "╶",
+#     0x3: "└",
+#     0x4: "╷",
+#     0x5: "│",
+#     0x6: "┌",
+#     0x7: "├",
+#     0x8: "╴",
+#     0x9: "┘",
+#     0xA: "─",
+#     0xB: "┴",
+#     0xC: "┐",
+#     0xD: "┤",
+#     0xE: "┬",
+#     0xF: "┼",
+
+
+class ClosedCell():
+    ...
 
 
 class Cell():
@@ -11,6 +51,10 @@ class Cell():
         self.state = 0000
         self.special: str | None = None
         self.seed: bool = False
+        self.position: tuple[int, int]
+    
+    def print(self):
+        ...
 
 
 class Maze():
@@ -21,7 +65,8 @@ class Maze():
             perfect: bool,
             entry: tuple,
             exit: tuple,
-            output_file: str
+            output_file: str,
+            seed: int | None = None
             ):
         self.height = height
         self.width = width
@@ -29,6 +74,9 @@ class Maze():
         self.entry = entry
         self.exit = exit
         self.output_file = output_file
+        self.seed = seed
+        self.grid = []
+        random.seed(seed)
 
     def create_grid(self):
         x1, y1 = self.entry
@@ -44,23 +92,12 @@ class Maze():
                 else:
                     print("┼", end="")
                 j += 1
+            # print(random.randint(1, 10), end="")
             print()
             i += 1
 
     def create_forty2(self) -> None:
         ...
-
-# Bit Direction
-# 0 (LSB) North
-# 1 East
-# 2 South
-# 3 West
-# 0101 example of horisontal path
-# 1010 example of vertical path
-# ###
-# #0#
-# ###
-# 0111
 
 
 # tiles = {
@@ -111,11 +148,14 @@ def parsing(data: str) -> Dict:
                         ):
                     result.update({entry[0].lower(): int(entry[1])})
                 elif (
-                    entry[0] == "ENTRY" or
-                    entry[0] == "EXIT"
-                    ):
+                        entry[0] == "ENTRY" or
+                        entry[0] == "EXIT"
+                        ):
                     ponit_pair = entry[1].split(",")
-                    result.update({entry[0].lower(): (int(ponit_pair[0]), int(ponit_pair[1]))})
+                    result.update(
+                        {entry[0].lower(): (int(ponit_pair[0]),
+                                            int(ponit_pair[1]))}
+                        )
                 elif entry[0] == "OUTPUT_FILE":
                     result.update({entry[0].lower(): entry[1]})
                 elif entry[0] == "PERFECT":
@@ -153,9 +193,9 @@ def main():
             raise Exception("We are expecting config.txt as an argument")
         my_maze = Maze(**data_4_maze)
         my_maze.create_grid()
-            # maze_gen(data_4_maze)
+        # maze_gen(data_4_maze)
     else:
-        print("try again")
+        print("The Amazing reqiuers '' as a given parameter")
 
 
 if __name__ == "__main__":

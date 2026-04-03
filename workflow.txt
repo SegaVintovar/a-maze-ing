@@ -15,6 +15,7 @@ how to interact with program from the window(termial)
 during the execution
 
 Makefile
+https://earthly.dev/blog/python-makefile/
 	what it does?
 		1)install and start the venv
 		2)install dependencies(pip / poetry)
@@ -22,3 +23,20 @@ Makefile
 
 Algo
 	IDK - time to explore this
+	starting
+	AI suggestion:
+		You start from one cell, then:
+
+		Mark the current cell as visited.
+		Pick a random neighbor that has not been visited.
+		Remove the wall between current cell and that neighbor.
+		Move to that neighbor.
+		Repeat.
+		If a cell has no unvisited neighbors, go back (using a stack) until you find a cell that does.
+
+
+1)generate the grid with cells where all walls are closed(start and end are already present)
+	create a cell out of 9 chars, where middle one is empty | S | E | #
+	append them to a list of lists
+
+2)
