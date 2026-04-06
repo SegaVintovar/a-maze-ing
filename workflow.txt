@@ -10,6 +10,12 @@ Maze:
 
 	it can be genrated as soon as it has received all parameters
 
+	42 insertion
+
+	validation
+
+
+
 
 how to interact with program from the window(termial)
 during the execution

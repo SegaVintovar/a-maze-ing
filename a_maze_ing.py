@@ -1,6 +1,6 @@
 import sys
 from typing import Dict
-# from pydantic import BaseModel, model_validators
+from pydantic import BaseModel, model_validator
 # from sys import argv
 import random
 from enum import Enum
@@ -58,7 +58,7 @@ class Cell():
         self.position = position
         self.visited: bool = False
 
-    def open_wall(self, wall: str):
+    def open_wall(self, wall: str) -> None:
         if wall == "N":
             self.n = 0
         if wall == "E":
@@ -68,8 +68,6 @@ class Cell():
         if wall == "W":
             self.w = 0
 
-
-    
     def print(self):
         ...
 
@@ -106,7 +104,6 @@ class Maze():
                 if (j, i) == self.entry:
                     cell = Cell(1, 1, 1, 1, (j, i))
                     cell.special = "S"
-                    
                     # print("S", end="")
                 elif (j, i) == self.exit:
                     cell = Cell(1, 1, 1, 1, (j, i))
@@ -127,15 +124,53 @@ class Maze():
                 print(cell.special, end="")
             print()
 
-    def create_forty2(self) -> None:
-        c_x = self.width / 2 - 3
-        c_y = self.height / 2 - 1
-        # ft_start = (c_x - 3, c_y - 1)
-        i = 0
-        while i < 7:
-            self.grid[c_y][c_x].special = "~"
-            i += 1
+    @staticmethod
+    def ft() -> list:
+        pre_ft = [
+            [1, 0, 1, 0, 1, 1, 1],
+            [1, 0, 1, 0, 0, 0, 1],
+            [1, 1, 1, 0, 1, 1, 1],
+            [0, 0, 1, 0, 1, 0, 0],
+            [0, 0, 1, 0, 1, 1, 1]
+        ]
+        result = []
+        ft_cell = Cell(1, 1, 1, 1, (0, 0))
+        other_cell = Cell(1, 1, 1, 1, (0, 0))
+        ft_cell.special = "~"
+        other_cell.special = "#"
+        ft_cell.visited = True
+        y = 0
+        for row in pre_ft:
+            x = 0
+            r_row = []
+            for tp in row:
+                if tp == 1:
+                    cell = ft_cell
+                if tp == 0:
+                    cell = other_cell
+                cell.position = (x, y)
+                r_row.append(cell)
+                x += 1
+            result.append(r_row)
+            y += 1
+        return result
 
+    def insert_forty2(self, ft: list[list]) -> None:
+        # What is the center of the grid
+        # and what the start point for the 42
+        c_x = int((self.width - 1) / 2) - 3
+        c_y = int((self.height - 1) / 2) - 2
+        j = 0
+        while j < len(ft):
+            i = 0
+            while i < len(ft[j]):
+                if ((c_x + i, c_y + j) == self.entry or
+                        (c_x + i, c_y + j) == self.exit):
+                    if ft[j][i].visited is True:
+                        raise Exception("Error: Entry and Exit must be appart from 42 logo")
+                self.grid[c_y + j][c_x + i] = ft[j][i]
+                i += 1
+            j += 1
 
 
 # 7 x 4
@@ -234,8 +269,13 @@ def main():
             # else:
         else:
             raise Exception("We are expecting config.txt as an argument")
-        my_maze = Maze(**data_4_maze)
-        my_maze.create_grid()
+        try:
+            my_maze = Maze(**data_4_maze)
+            my_maze.create_grid()
+            my_maze.insert_forty2(my_maze.ft())
+        except Exception as e:
+            print(str(e))
+            exit(1)
         my_maze.print_grid()
         # maze_gen(data_4_maze)
     else:

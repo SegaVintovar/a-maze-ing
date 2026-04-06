@@ -1,8 +1,8 @@
-HEIGHT=10
-WIDTH=20
+HEIGHT=11
+WIDTH=21
 PERFECT=True
 ENTRY=0,0
-EXIT=19,9
+EXIT=14,7
 OUTPUT_FILE=maze.txt
 
 # Lines starting with # are comments and must be ignored.
