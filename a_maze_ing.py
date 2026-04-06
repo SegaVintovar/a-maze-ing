@@ -5,6 +5,12 @@ from pydantic import BaseModel, model_validator
 import random
 from enum import Enum
 
+OPPOSSITE_DIR = {
+    "N": "S",
+    "S": "N",
+    "E": "W",
+    "W": "E"
+}
 
 # Bit Direction
 # 0 (LSB) North
@@ -39,6 +45,11 @@ from enum import Enum
 #     0xE: "┬",
 #     0xF: "┼",
 
+# cell = [
+#     ["┌", self.n, "┐"],
+#     [self.e, self.special or " ", self.w],
+#     ["└", self.s, "┘"]
+# ]
 
 class ClosedCell():
     ...
@@ -57,6 +68,21 @@ class Cell():
         self.seed: bool = False
         self.position = position
         self.visited: bool = False
+
+    def wall(self, wall: bool, side: str) -> str:
+        if not wall:
+            return "  "
+        if side == "N" or side == "S":
+            return "██"
+        if side == "E" or side == "W":
+            return "██"
+
+    def representation(self):
+        return [
+            ["██", self.wall(self.n, "N"), "██"],
+            [self.wall(self.e, "E"), self.special, self.wall(self.w, "W")],
+            ["██", self.wall(self.s, "S"), "██"]
+            ]
 
     def open_wall(self, wall: str) -> None:
         if wall == "N":
@@ -103,14 +129,14 @@ class Maze():
             while j < self.width:
                 if (j, i) == self.entry:
                     cell = Cell(1, 1, 1, 1, (j, i))
-                    cell.special = "S"
+                    cell.special = " S"
                     # print("S", end="")
                 elif (j, i) == self.exit:
                     cell = Cell(1, 1, 1, 1, (j, i))
-                    cell.special = "E"
+                    cell.special = " E"
                 else:
                     cell = Cell(1, 1, 1, 1, (j, i))
-                    cell.special = "#"
+                    cell.special = "  "
                 row.append(cell)
                 j += 1
             # print(random.randint(1, 10), end="")
@@ -120,9 +146,15 @@ class Maze():
 
     def print_grid(self) -> None:
         for row in self.grid:
-            for cell in row:
-                print(cell.special, end="")
-            print()
+            i = 0
+            while i < 3:
+                for cell in row:
+                    k = 0
+                    while k < 3:
+                        print(cell.representation()[i][k], end="")
+                        k += 1
+                print()
+                i += 1
 
     @staticmethod
     def ft() -> list:
@@ -136,8 +168,8 @@ class Maze():
         result = []
         ft_cell = Cell(1, 1, 1, 1, (0, 0))
         other_cell = Cell(1, 1, 1, 1, (0, 0))
-        ft_cell.special = "~"
-        other_cell.special = "#"
+        ft_cell.special = "42"
+        other_cell.special = "  "
         ft_cell.visited = True
         y = 0
         for row in pre_ft:
@@ -167,11 +199,74 @@ class Maze():
                 if ((c_x + i, c_y + j) == self.entry or
                         (c_x + i, c_y + j) == self.exit):
                     if ft[j][i].visited is True:
-                        raise Exception("Error: Entry and Exit must be appart from 42 logo")
+                        raise Exception(
+                            "Error: Entry and Exit must be appart from 42 logo"
+                            )
                 self.grid[c_y + j][c_x + i] = ft[j][i]
                 i += 1
             j += 1
+        # j = 0
+        # for j, row in enumerate(ft):
+        #     i = 0
+        #     while i < len(ft[j]):
+        #         if ((c_x + i, c_y + j) == self.entry or
+        #                 (c_x + i, c_y + j) == self.exit):
+        #             if ft[j][i].visited is True:
+        #                 raise Exception(
+        #                     "Error: Entry and Exit must be appart from 42 logo"
+        #                     )
+        #         self.grid[c_y + j][c_x + i] = ft[j][i]
+        #         i += 1
 
+    @staticmethod
+    def remove_walls_in_between(
+            current_cell: Cell, direction: str, next_cell: Cell) -> None:
+        current_cell.open_wall(direction)
+        next_cell.open_wall(OPPOSSITE_DIR[direction])
+
+
+
+    def get_neighbours(self, cell: Cell) -> dict:
+        x, y = cell.position
+        result = {}
+        # checing from 4 sides
+        if x - 1 >= 0:
+            if self.grid[y][x - 1].visited is False:
+                result.update({"E": self.grid[y][x - 1]})
+        if x + 1 < self.width:
+            if self.grid[y][x + 1].visited is False:
+                result.update({"W": self.grid[y][x + 1]})
+        if y - 1 >= 0:
+            if self.grid[y - 1][x].visited is False:
+                result.update({"N": self.grid[y - 1][x]})
+        if y + 1 < self.height:
+            if self.grid[y + 1][x].visited is False:
+                result.update({"S": self.grid[y + 1][x]})
+        return result
+
+    def path_gen(self) -> None:
+        start = self.grid[self.entry[1]][self.entry[0]]
+        current = start
+        next_cell = None
+        # flag = True
+        i = 0
+        while True:
+            if next_cell:
+                current = next_cell
+            neighbours = self.get_neighbours(current)
+            print(neighbours)
+            if len(neighbours) > 0:
+                direction, next_cell = random.choice(list(neighbours.items()))
+                Maze.remove_walls_in_between(current, direction, next_cell)
+                current.visited = True
+                current = next_cell
+            else:
+                break
+                self.path_gen()
+            # i += 0
+        
+        # print(direction)
+        
 
 # 7 x 4
 # #_#_###
@@ -276,6 +371,7 @@ def main():
         except Exception as e:
             print(str(e))
             exit(1)
+        my_maze.path_gen()
         my_maze.print_grid()
         # maze_gen(data_4_maze)
     else:
