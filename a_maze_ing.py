@@ -1,6 +1,6 @@
 import sys
 from typing import Dict
-from pydantic import BaseModel, model_validator
+# from pydantic import BaseModel, model_validators
 # from sys import argv
 import random
 from enum import Enum
@@ -45,13 +45,30 @@ class ClosedCell():
 
 
 class Cell():
-    def __init__(self, position: tuple):
-        self.x = position[0]
-        self.y = position[1]
-        self.state = 0000
+    def __init__(
+            self, n: bool, e: bool, s: bool, w: bool, position: tuple[int, int]
+            ) -> None:
+        # self.state = 0000
+        self.n = n
+        self.e = e
+        self.s = s
+        self.w = w
         self.special: str | None = None
         self.seed: bool = False
-        self.position: tuple[int, int]
+        self.position = position
+        self.visited: bool = False
+
+    def open_wall(self, wall: str):
+        if wall == "N":
+            self.n = 0
+        if wall == "E":
+            self.e = 0
+        if wall == "S":
+            self.s = 0
+        if wall == "W":
+            self.w = 0
+
+
     
     def print(self):
         ...
@@ -84,22 +101,48 @@ class Maze():
         i = 0
         while i < self.height:
             j = 0
+            row = []
             while j < self.width:
                 if (j, i) == self.entry:
-                    print("S", end="")
+                    cell = Cell(1, 1, 1, 1, (j, i))
+                    cell.special = "S"
+                    
+                    # print("S", end="")
                 elif (j, i) == self.exit:
-                    print("E", end="")
+                    cell = Cell(1, 1, 1, 1, (j, i))
+                    cell.special = "E"
                 else:
-                    print("┼", end="")
+                    cell = Cell(1, 1, 1, 1, (j, i))
+                    cell.special = "#"
+                row.append(cell)
                 j += 1
             # print(random.randint(1, 10), end="")
-            print()
+            # print()
+            self.grid.append(row)
             i += 1
 
+    def print_grid(self) -> None:
+        for row in self.grid:
+            for cell in row:
+                print(cell.special, end="")
+            print()
+
     def create_forty2(self) -> None:
-        ...
+        c_x = self.width / 2 - 3
+        c_y = self.height / 2 - 1
+        # ft_start = (c_x - 3, c_y - 1)
+        i = 0
+        while i < 7:
+            self.grid[c_y][c_x].special = "~"
+            i += 1
 
 
+
+# 7 x 4
+# #_#_###
+# ###___#
+# __#_#__
+# __#_###
 # tiles = {
 # 0x0: " ",
 # 0x1: "╵",
@@ -193,6 +236,7 @@ def main():
             raise Exception("We are expecting config.txt as an argument")
         my_maze = Maze(**data_4_maze)
         my_maze.create_grid()
+        my_maze.print_grid()
         # maze_gen(data_4_maze)
     else:
         print("The Amazing reqiuers '' as a given parameter")
