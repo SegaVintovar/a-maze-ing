@@ -57,17 +57,18 @@ class ClosedCell():
 
 class Cell():
     def __init__(
-            self, n: bool, e: bool, s: bool, w: bool, position: tuple[int, int]
+            self, n: bool, e: bool, s: bool, w: bool, position: tuple[int, int],
+            special: str, visited: bool
             ) -> None:
         # self.state = 0000
         self.n = n
         self.e = e
         self.s = s
         self.w = w
-        self.special: str | None = None
+        self.special = special
         self.seed: bool = False
         self.position = position
-        self.visited: bool = False
+        self.visited = visited
 
     def wall(self, wall: bool, side: str) -> str:
         if not wall:
@@ -80,19 +81,19 @@ class Cell():
     def representation(self):
         return [
             ["██", self.wall(self.n, "N"), "██"],
-            [self.wall(self.e, "E"), self.special, self.wall(self.w, "W")],
+            [self.wall(self.w, "W"), self.special, self.wall(self.e, "E")],
             ["██", self.wall(self.s, "S"), "██"]
             ]
 
     def open_wall(self, wall: str) -> None:
         if wall == "N":
-            self.n = 0
+            self.n = False
         if wall == "E":
-            self.e = 0
+            self.e = False
         if wall == "S":
-            self.s = 0
+            self.s = False
         if wall == "W":
-            self.w = 0
+            self.w = False
 
     def print(self):
         ...
@@ -128,15 +129,15 @@ class Maze():
             row = []
             while j < self.width:
                 if (j, i) == self.entry:
-                    cell = Cell(1, 1, 1, 1, (j, i))
-                    cell.special = " S"
+                    cell = Cell(1, 1, 1, 1, (j, i), " S", True)
+                    # cell.special = " S"
                     # print("S", end="")
                 elif (j, i) == self.exit:
-                    cell = Cell(1, 1, 1, 1, (j, i))
-                    cell.special = " E"
+                    cell = Cell(1, 1, 1, 1, (j, i), " E", False)
+                    # cell.special = " E"
                 else:
-                    cell = Cell(1, 1, 1, 1, (j, i))
-                    cell.special = "  "
+                    cell = Cell(1, 1, 1, 1, (j, i), "  ", False)
+                    # cell.special = "  "
                 row.append(cell)
                 j += 1
             # print(random.randint(1, 10), end="")
@@ -166,20 +167,23 @@ class Maze():
             [0, 0, 1, 0, 1, 1, 1]
         ]
         result = []
-        ft_cell = Cell(1, 1, 1, 1, (0, 0))
-        other_cell = Cell(1, 1, 1, 1, (0, 0))
-        ft_cell.special = "42"
-        other_cell.special = "  "
-        ft_cell.visited = True
+        # ft_cell = Cell(1, 1, 1, 1, (0, 0), special="42", visited=True)
+        # other_cell = Cell(1, 1, 1, 1, (0, 0), special="  ", visited=False)
+        # ft_cell.special = "42"
+        # other_cell.special = "  "
+        # ft_cell.visited = True
+        # other_cell.visited = False
         y = 0
         for row in pre_ft:
             x = 0
             r_row = []
             for tp in row:
                 if tp == 1:
-                    cell = ft_cell
+                    cell = Cell(
+                        1, 1, 1, 1, (0, 0), "42", True)
                 if tp == 0:
-                    cell = other_cell
+                    cell = Cell(
+                        1, 1, 1, 1, (0, 0), "  ", False)
                 cell.position = (x, y)
                 r_row.append(cell)
                 x += 1
@@ -203,6 +207,7 @@ class Maze():
                             "Error: Entry and Exit must be appart from 42 logo"
                             )
                 self.grid[c_y + j][c_x + i] = ft[j][i]
+                self.grid[c_y + j][c_x + i].position = (c_x + i, c_y + j)
                 i += 1
             j += 1
         # j = 0
@@ -220,7 +225,8 @@ class Maze():
 
     @staticmethod
     def remove_walls_in_between(
-            current_cell: Cell, direction: str, next_cell: Cell) -> None:
+            current_cell: Cell, direction: str, next_cell: Cell
+            ) -> None:
         current_cell.open_wall(direction)
         next_cell.open_wall(OPPOSSITE_DIR[direction])
 
@@ -232,10 +238,10 @@ class Maze():
         # checing from 4 sides
         if x - 1 >= 0:
             if self.grid[y][x - 1].visited is False:
-                result.update({"E": self.grid[y][x - 1]})
+                result.update({"W": self.grid[y][x - 1]})
         if x + 1 < self.width:
             if self.grid[y][x + 1].visited is False:
-                result.update({"W": self.grid[y][x + 1]})
+                result.update({"E": self.grid[y][x + 1]})
         if y - 1 >= 0:
             if self.grid[y - 1][x].visited is False:
                 result.update({"N": self.grid[y - 1][x]})
@@ -247,9 +253,9 @@ class Maze():
     def path_gen(self) -> None:
         start = self.grid[self.entry[1]][self.entry[0]]
         current = start
-        next_cell = None
+        next_cell: Cell = None
         # flag = True
-        i = 0
+        # i = 0
         while True:
             if next_cell:
                 current = next_cell
@@ -259,10 +265,13 @@ class Maze():
                 direction, next_cell = random.choice(list(neighbours.items()))
                 Maze.remove_walls_in_between(current, direction, next_cell)
                 current.visited = True
-                current = next_cell
+                # current = next_cell
             else:
+                # backtrace and find another way
                 break
-                self.path_gen()
+            if next_cell.special == " E":
+                break
+            # self.path_gen()
             # i += 0
         
         # print(direction)
@@ -373,6 +382,10 @@ def main():
             exit(1)
         my_maze.path_gen()
         my_maze.print_grid()
+        for row in my_maze.grid:
+            for cell in row:
+                print(cell.position, end="")
+            print()
         # maze_gen(data_4_maze)
     else:
         print("The Amazing reqiuers '' as a given parameter")
@@ -380,7 +393,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-"Hello"
-"World"
-"!"
