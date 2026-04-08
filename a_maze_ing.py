@@ -350,9 +350,11 @@ class Maze():
 # 0xF: "┼",
 # }
 
-
-class Cell_Variants():
-    ...
+# cell + cell
+# class Cell_Variants():
+#     def __add__(self):
+#         ...
+#     ...
 
 
 # class Cell():
