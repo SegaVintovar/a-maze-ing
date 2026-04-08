@@ -273,7 +273,7 @@ class Maze():
                     result.update({"S": self.grid[y + 1][x]})
         return result
 
-    def finalize(self):
+    def finalize(self) -> None:
         for row in self.grid:
             for cell in row:
                 if cell.visited is False and cell.special != "42":

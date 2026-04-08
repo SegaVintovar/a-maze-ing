@@ -46,3 +46,9 @@ Algo
 	append them to a list of lists
 
 2)
+
+
+1) parse the config
+2) validate
+3) init Maze
+4) generate: path from S till the E , break walls of the unvisted 
