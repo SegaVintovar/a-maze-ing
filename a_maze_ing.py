@@ -69,6 +69,7 @@ class Cell():
         self.seed: bool = False
         self.position = position
         self.visited = visited
+        self.path = False
 
     def wall(self, wall: bool, side: str) -> str:
         if not wall:
@@ -117,7 +118,7 @@ class Maze():
         self.exit = exit
         self.output_file = output_file
         self.seed = seed
-        self.grid = []
+        self.grid: list[list[Cell]] = []
         random.seed(seed)
 
     def create_grid(self):
@@ -249,9 +250,44 @@ class Maze():
             if self.grid[y + 1][x].visited is False:
                 result.update({"S": self.grid[y + 1][x]})
         return result
+    
+    def get_visited_neighbours(self, cell: Cell) -> dict:
+        x, y = cell.position
+        result = {}
+        # checing from 4 sides
+        if x - 1 >= 0:
+            if self.grid[y][x - 1].visited is True:
+                if self.grid[y][x - 1].special != "42":
+                    result.update({"W": self.grid[y][x - 1]})
+        if x + 1 < self.width:
+            if self.grid[y][x + 1].visited is True:
+                if self.grid[y][x + 1].special != "42":
+                    result.update({"E": self.grid[y][x + 1]})
+        if y - 1 >= 0:
+            if self.grid[y - 1][x].visited is True:
+                if self.grid[y - 1][x].special != "42":
+                    result.update({"N": self.grid[y - 1][x]})
+        if y + 1 < self.height:
+            if self.grid[y + 1][x].visited is True:
+                if self.grid[y + 1][x].special != "42":
+                    result.update({"S": self.grid[y + 1][x]})
+        return result
+
+    def finalize(self):
+        for row in self.grid:
+            for cell in row:
+                if cell.visited is False and cell.special != "42":
+                    neighbours = self.get_visited_neighbours(cell)
+                    print(neighbours)
+                    if len(neighbours) > 0:
+                        direction, next_cell = random.choice(
+                            list(neighbours.items()))
+                        Maze.remove_walls_in_between(
+                            cell, direction, next_cell)
 
     def path_gen(self) -> None:
         start = self.grid[self.entry[1]][self.entry[0]]
+        stack = []
         current = start
         next_cell: Cell = None
         # flag = True
@@ -260,17 +296,30 @@ class Maze():
             if next_cell:
                 current = next_cell
             neighbours = self.get_neighbours(current)
-            print(neighbours)
+            print(neighbours, current.position)
             if len(neighbours) > 0:
                 direction, next_cell = random.choice(list(neighbours.items()))
                 Maze.remove_walls_in_between(current, direction, next_cell)
+                if next_cell.special == " E":
+                    break
                 current.visited = True
+                neighbours.pop(direction)
+                if len(neighbours) > 0:
+                    stack.append(current)
                 # current = next_cell
+            elif len(stack) != 0:
+                next_cell = stack[-1]
             else:
-                # backtrace and find another way
+                print("This is a dead end!")
                 break
-            if next_cell.special == " E":
-                break
+        print("finalize")
+        self.finalize()
+            # loop through the grid, check all visited cells
+            # check len(get_neighbours) > 0:
+            #   then dig into avaliable cells
+            # or look up for all the unvisited cells
+            #   and check if they have visited neighbours
+            #   and the dig there 
             # self.path_gen()
             # i += 0
         
@@ -382,10 +431,10 @@ def main():
             exit(1)
         my_maze.path_gen()
         my_maze.print_grid()
-        for row in my_maze.grid:
-            for cell in row:
-                print(cell.position, end="")
-            print()
+        # for row in my_maze.grid:
+        #     for cell in row:
+        #         print(cell.position, end="")
+        #     print()
         # maze_gen(data_4_maze)
     else:
         print("The Amazing reqiuers '' as a given parameter")
