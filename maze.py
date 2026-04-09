@@ -74,6 +74,7 @@ class Maze():
         self.seed = seed
         self.grid: list[list[Cell]] = []
         random.seed(seed)
+        self.stack = []
 
     def create_grid(self):
         x1, y1 = self.entry
@@ -219,21 +220,69 @@ class Maze():
                     result.update({"S": self.grid[y + 1][x]})
         return result
 
-    def finalize(self) -> None:
+    def finalize_v1(self) -> None:
         for row in self.grid:
             for cell in row:
                 if cell.visited is False and cell.special != "42":
                     neighbours = self.get_visited_neighbours(cell)
-                    print(neighbours)
+                    print(neighbours, cell.position)
                     if len(neighbours) > 0:
                         direction, next_cell = random.choice(
                             list(neighbours.items()))
                         Maze.remove_walls_in_between(
                             cell, direction, next_cell)
+                        cell.visited = True
+
+    def finalize_v2(self) -> None:
+        # in case we want to loop from the end
+        # for cell in reversed(self.stack):
+        for cell in self.stack:
+            neighbours = self.get_neighbours(cell)
+            print(neighbours, cell.position)
+            if len(neighbours) > 0:
+                direction, next_cell = random.choice(
+                    list(neighbours.items()))
+                Maze.remove_walls_in_between(
+                    cell, direction, next_cell)
+                self.dig_into_depth(next_cell)
+                if self.get_neighbours(cell) == 0:
+                    self.stack.remove(cell)
+                
+                # cell.visited = True
+    # go till you have where to go
+    def dig_into_depth(self, next_cell: Cell) -> None:
+        current = None
+        # while len(self.get_neighbours(next_cell)) > 0:
+        #     ...
+        while True:
+            # if current is None:
+            current = next_cell
+            neighbours = self.get_neighbours(current)
+            if len(neighbours) > 0:
+                direction, next_cell = random.choice(
+                     list(neighbours.items()))
+                Maze.remove_walls_in_between(
+                    current, direction, next_cell)
+                current.visited = True
+            else:
+                break
+            
+
+        # for row in self.grid:
+        #     for cell in row:
+        #         if cell.visited is True and cell.special != "42":
+        #             neighbours = self.get_neighbours(cell)
+        #             print(neighbours, cell.position)
+        #             if len(neighbours) > 0:
+        #                 direction, next_cell = random.choice(
+        #                     list(neighbours.items()))
+        #                 Maze.remove_walls_in_between(
+        #                     cell, direction, next_cell)
+        #                 cell.visited = True
 
     def path_gen(self) -> None:
         start = self.grid[self.entry[1]][self.entry[0]]
-        stack = []
+        
         current = start
         next_cell: Cell = None
         # flag = True
@@ -251,12 +300,12 @@ class Maze():
                 current.visited = True
                 neighbours.pop(direction)
                 if len(neighbours) > 0:
-                    stack.append(current)
+                    self.stack.append(current)
                 # current = next_cell
-            elif len(stack) != 0:
-                next_cell = stack[-1]
+            elif len(self.stack) != 0:
+                next_cell = self.stack[-1]
             else:
                 print("This is a dead end!")
                 break
         print("finalize")
-        self.finalize()
+        self.finalize_v2()
