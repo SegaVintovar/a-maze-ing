@@ -1,5 +1,5 @@
 from pydantic import BaseModel, model_validator, Field
-import sys
+# import sys
 import os
 
 terminal_width = os.get_terminal_size()
@@ -41,6 +41,8 @@ def parsing(data: str) -> dict:
                         result.update({entry[0].lower(): True})
                     elif entry[1] == "False":
                         result.update({entry[0].lower(): False})
+                elif entry[0] == "SEED":
+                    result.update({entry[0].lower(): entry[1]})
                 else:
                     raise ParsingError(f"Unknown parameter: {row}")
             else:
@@ -51,5 +53,25 @@ def parsing(data: str) -> dict:
     return result
 
 
-def input_check(BaseModel):
-    width: int = Field(gt=0, lt=terminal_width)
+class InputCheck(BaseModel):
+    # we do not run the amazing if the terminal width is not big enough
+    # cell is represented as 6 colomns
+    width: int = Field(gt=0, lt=int(terminal_width[0] / 6))
+    height: int = Field(gt=0)
+    entry: tuple[int, int]
+    exit: tuple[int, int]
+    # r is raw string, because regex uses a lot of backslashes
+    # without r Python would treat those as escape char
+    # ^ is start of the string, $ is the end
+    # . is any char, + is one or more previous token
+    # \. is literal
+    output_file: str = Field(min_length=5, pattern=r"^.+\.txt$")
+    perfect: bool
+    seed: int | None = Field(ge=0)
+
+    # i can check if the entry and exit are in the grid
+    # @model_validator
+    # def validator(self):
+    #     if self.width * 6 < terminal_width:
+    #         raise ValueError
+    #     return self

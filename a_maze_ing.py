@@ -17,11 +17,9 @@ from parsing import parsing
             #   then dig into avaliable cells
             # or look up for all the unvisited cells
             #   and check if they have visited neighbours
-            #   and the dig there 
+            #   and the dig there
             # self.path_gen()
             # i += 0
-
-        
 
 # 7 x 4
 # #_#_###
@@ -54,7 +52,7 @@ def print_grid_of_pos(grid: list[list[Cell]]) -> None:
         print()
 
 
-def main():
+def main() -> None:
     if len(sys.argv) == 2:
         if sys.argv[1] == "config.txt":
             with open(sys.argv[1], "r") as config_file:
@@ -77,10 +75,10 @@ def main():
             exit(1)
         my_maze.path_gen()
         my_maze.print_grid()
-        
+
         # maze_gen(data_4_maze)
     else:
-        print("The Amazing reqiuers '' as a given parameter")
+        print("The Amazing reqiuers 'config.txt' as a given parameter")
 
 
 if __name__ == "__main__":

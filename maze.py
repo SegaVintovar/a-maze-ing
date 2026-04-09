@@ -1,4 +1,7 @@
 import random
+from time import sleep
+from functools import wraps
+from typing import Callable
 
 
 OPPOSSITE_DIR = {
@@ -8,6 +11,17 @@ OPPOSSITE_DIR = {
     "W": "E"
 }
 
+
+def time_slower(seconds: int | float):
+    def decorator(func: Callable):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            sleep(seconds)
+            result = func(*args, **kwargs)
+            return result
+        return wrapper
+    return decorator
+        
 
 class Cell():
     def __init__(
@@ -74,7 +88,7 @@ class Maze():
         self.seed = seed
         self.grid: list[list[Cell]] = []
         random.seed(seed)
-        self.stack = []
+        self.stack: list[Cell] = []
 
     def create_grid(self):
         x1, y1 = self.entry
@@ -235,8 +249,8 @@ class Maze():
 
     def finalize_v2(self) -> None:
         # in case we want to loop from the end
-        # for cell in reversed(self.stack):
-        for cell in self.stack:
+        for cell in reversed(self.stack):
+            # for cell in self.stack:
             neighbours = self.get_neighbours(cell)
             print(neighbours, cell.position)
             if len(neighbours) > 0:
@@ -264,6 +278,9 @@ class Maze():
                 Maze.remove_walls_in_between(
                     current, direction, next_cell)
                 current.visited = True
+                neighbours.pop(direction)
+                if len(neighbours) > 0:
+                    self.stack.append(Cell)
             else:
                 break
             
@@ -286,26 +303,43 @@ class Maze():
         current = start
         next_cell: Cell = None
         # flag = True
-        # i = 0
-        while True:
+        i = 0
+        while i < 5000:
             if next_cell:
                 current = next_cell
+                if next_cell.special == " E":
+                    break
             neighbours = self.get_neighbours(current)
             print(neighbours, current.position)
             if len(neighbours) > 0:
+                for cell in neighbours.values():
+                    if cell.special == " E":
+                        next_cell == cell
+                
                 direction, next_cell = random.choice(list(neighbours.items()))
                 Maze.remove_walls_in_between(current, direction, next_cell)
-                if next_cell.special == " E":
-                    break
                 current.visited = True
                 neighbours.pop(direction)
                 if len(neighbours) > 0:
+                    print(len(neighbours), end=", ")
                     self.stack.append(current)
+                print(i)
+                i += 1
                 # current = next_cell
             elif len(self.stack) != 0:
+                print("we are in dead end, lets take last cell from the stack", len(self.stack))
                 next_cell = self.stack[-1]
+                self.stack.pop(-1)
             else:
                 print("This is a dead end!")
                 break
+        for cell in self.stack:
+            print(cell.position, end=", ")
         print("finalize")
-        self.finalize_v2()
+        # self.finalize_v2()
+
+    def another_path_gen(self) -> None:
+        start = self.grid[self.entry[1]][self.entry[0]]
+        current = start
+        next_cell: Cell = None
+        
