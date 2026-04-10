@@ -48,9 +48,12 @@ class Cell():
             return "██"
 
     def representation(self):
+        #before - [self.wall(self.w, "W"), self.special, self.wall(self.e, "E")]
+        # added - "··" if self.path == True else self.special
         return [
             ["██", self.wall(self.n, "N"), "██"],
-            [self.wall(self.w, "W"), self.special, self.wall(self.e, "E")],
+            [self.wall(self.w, "W"), "··" if self.path == True else self.special,
+             self.wall(self.e, "E")],
             ["██", self.wall(self.s, "S"), "██"]
             ]
 
@@ -115,14 +118,21 @@ class Maze():
             self.grid.append(row)
             i += 1
 
-    def print_grid(self) -> None:
+    def print_grid(
+            self, show_path: bool = False, color: str = "\033[0m"
+            ) -> None:
         for row in self.grid:
             i = 0
             while i < 3:
                 for cell in row:
                     k = 0
                     while k < 3:
-                        print(cell.representation()[i][k], end="")
+                        #new stuff for colors
+                        part = cell.representation()[i][k]
+                        if part == "██":
+                            print(color + part + "\033[0m", end="")
+                        else:
+                            print(part, end="")
                         k += 1
                 print()
                 i += 1
