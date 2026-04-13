@@ -53,12 +53,11 @@ class Cell():
 
     # @time_slower(0.001)
     def representation(self):
+        #before - [self.wall(self.w, "W"), self.special, self.wall(self.e, "E")]
+        # added - "··" if self.path == True else self.special
         return [
             ["██", self.wall(self.n, "N"), "██"],
-            # [self.wall(self.w, "W"), self.special, self.wall(self.e, "E")],
-            [self.wall(self.w, "W"),
-             " P" if (
-                 self.path is True and self.special != " S") else self.special,
+            [self.wall(self.w, "W"), "··" if self.path == True else self.special,
              self.wall(self.e, "E")],
             ["██", self.wall(self.s, "S"), "██"]
             ]
@@ -136,8 +135,7 @@ class Maze():
                 for cell in row:
                     k = 0
                     while k < 3:
-                        # print(cell.representation()[i][k], end="")
-                        # new stuff for colors
+                        #new stuff for colors
                         part = cell.representation()[i][k]
                         if part == "██":
                             print(color + part + "\033[0m", end="")
