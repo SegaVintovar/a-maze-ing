@@ -116,9 +116,11 @@ def main() -> None:
         except Exception as e:
             print(str(e))
             exit(1)
-        my_maze.path_gen()
-        # my_maze.print_grid() -  now in run_menu!!!
-        run_menu(my_maze)
+          
+        # for cell in my_maze.stack:
+        #     print(cell.position, end=", ")
+        # print()
+        
 
         # maze_gen(data_4_maze)
     else:
