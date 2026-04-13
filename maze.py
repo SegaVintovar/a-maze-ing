@@ -416,7 +416,7 @@ class Maze():
 
     # MazeGen actually. my alco algo
     def path_gen(self) -> None:
-        print(self.grid)
+        # print(self.grid)
         start = self.grid[self.entry[1]][self.entry[0]]
         current = start
         next_cell: Cell = None
