@@ -1,9 +1,10 @@
-HEIGHT=10
-WIDTH=10
-PERFECT=True
+HEIGHT=25
+WIDTH=25
+PERFECT=False
 ENTRY=0,0
-EXIT=9,9
+EXIT=24,24
 OUTPUT_FILE=maze.txt
-# SEED=4
+# SEED=18
 
 # Lines starting with # are comments and must be ignored.
+# 15, 

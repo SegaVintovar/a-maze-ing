@@ -75,6 +75,10 @@ def main() -> None:
             exit(1)
         my_maze.path_gen()
         my_maze.print_grid()
+        for cell in my_maze.stack:
+            print(cell.position, end=", ")
+        print()
+        
 
         # maze_gen(data_4_maze)
     else:
