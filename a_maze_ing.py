@@ -1,6 +1,4 @@
 import sys
-# from sys import argv
-from enum import Enum
 from maze import Maze, Cell
 from parsing import parsing
 from os import system
@@ -11,40 +9,29 @@ from os import system
 # 2 South
 # 3 West
 
+def decode(cell: Cell) -> str:
+    result = ""
+    north = int(cell.n)
+    east = int(cell.e)
+    south = int(cell.s)
+    west = int(cell.w)
+    result = str(west) + str(south) + str(east) + str(north)
+    return result
 
 
-            # loop through the grid, check all visited cells
-            # check len(get_neighbours) > 0:
-            #   then dig into avaliable cells
-            # or look up for all the unvisited cells
-            #   and check if they have visited neighbours
-            #   and the dig there
-            # self.path_gen()
-            # i += 0
+def write_into_file(grid: list[list[Cell]], output_file) -> None:
+    result = ""
+    for row in grid:
+        for cell in row:
+            string = decode(cell)
+            result += str(int(string, base=16))
+        result += "\n"
+    try:
+        with open("output_file", mode="w") as f:
+            f.write(result)
+    except Exception as e:
+        raise e
 
-# 7 x 4
-# #_#_###
-# ###___#
-# __#_#__
-# __#_###
-# tiles = {
-# 0x0: " ",
-# 0x1: "╵",
-# 0x2: "╶",
-# 0x3: "└",
-# 0x4: "╷",
-# 0x5: "│",
-# 0x6: "┌",
-# 0x7: "├",
-# 0x8: "╴",
-# 0x9: "┘",
-# 0xA: "─",
-# 0xB: "┴",
-# 0xC: "┐",
-# 0xD: "┤",
-# 0xE: "┬",
-# 0xF: "┼",
-# }
 
 def run_menu(my_maze: Maze) -> None:
     show_path = False 
@@ -82,6 +69,7 @@ def run_menu(my_maze: Maze) -> None:
         elif choice == "4":
             break
 
+
 def print_grid_of_pos(grid: list[list[Cell]]) -> None:
     for row in grid:
         for cell in row:
@@ -111,19 +99,13 @@ def main() -> None:
             my_maze.create_grid()
             my_maze.insert_forty2(my_maze.ft())
             my_maze.path_gen()
+            write_into_file(my_maze.grid, my_maze.output_file)
             my_maze.print_grid()
             run_menu(my_maze)
 
         except Exception as e:
             print(str(e))
             exit(1)
-          
-        # for cell in my_maze.stack:
-        #     print(cell.position, end=", ")
-        # print()
-        
-
-        # maze_gen(data_4_maze)
     else:
         print("The Amazing reqiuers 'config.txt' as a given parameter")
 
