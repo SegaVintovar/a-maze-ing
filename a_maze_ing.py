@@ -56,7 +56,7 @@ def run_menu(my_maze: Maze) -> None:
     while True:
         """Escape sequence to clean terminal screen"""
         print("\033[H\033[J", end="")
-
+        system("virt_env/bin/bash clear")
         my_maze.print_grid(show_path, colors[color_index])
         # my_maze.print_grid()
 
@@ -118,9 +118,9 @@ def main() -> None:
             print(str(e))
             exit(1)
           
-        for cell in my_maze.stack:
-            print(cell.position, end=", ")
-        print()
+        # for cell in my_maze.stack:
+        #     print(cell.position, end=", ")
+        # print()
         
 
         # maze_gen(data_4_maze)

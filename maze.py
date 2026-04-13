@@ -414,9 +414,7 @@ class Maze():
             # choose the neighbour that is not on the south or east or 42,
         # 
 
-    # MazeGen actually. my alco algo
-    def path_gen(self) -> None:
-        # print(self.grid)
+    def stage1(self) -> None:
         start = self.grid[self.entry[1]][self.entry[0]]
         current = start
         next_cell: Cell = None
@@ -457,11 +455,55 @@ class Maze():
             # print(cell.position, end=", ")
         if self.stack:
             self.stack[-1].special = " P"
+
+    # MazeGen actually. my alco algo
+    def path_gen(self) -> None:
+        # print(self.grid)
+        # start = self.grid[self.entry[1]][self.entry[0]]
+        # current = start
+        # next_cell: Cell = None
+        # while True:
+        #     if next_cell:
+        #         current = next_cell
+        #         next_cell = None
+        #     neighbours = self.get_neighbours(current)
+        #     # print(neighbours, current.position)
+        #     if len(neighbours) > 0:
+        #         direction = None
+        #         for dir, cell in list(neighbours.items()):
+        #             if cell.special == " E":
+        #                 next_cell = cell
+        #                 direction = dir
+        #                 break
+        #         if not next_cell:
+        #             direction, next_cell = random.choice(
+        #                 list(neighbours.items()))
+        #         Maze.remove_walls_in_between(current, direction, next_cell)
+        #         current.visited = True
+        #         next_cell.parent = current
+        #         if next_cell.special == " E":
+        #             self.stack.append(current)
+        #             next_cell.visited = True
+        #             break
+        #         neighbours.pop(direction)
+        #         if len(neighbours) >= 0:
+        #             self.stack.append(current)
+        #     elif len(self.stack) != 0:
+        #         cell.dead = True
+        #         next_cell = self.stack.pop(-1)
+        #         current.visited = True
+        #     else:
+        #         current.visited = True
+        #         break
+        # # for cell in self.stack:
+        #     # print(cell.position, end=", ")
+        # if self.stack:
+        #     self.stack[-1].special = " P"
+        self.stage1()
         self.build_the_path()
         self.stage2()
         self.stage3()
-        # if self.perfect is False:
-        #     self.dead_end_open()
+
 
     @staticmethod
     def distance(point_a: tuple[int, int], point_b: tuple[int, int]) -> float:
@@ -476,7 +518,6 @@ class Maze():
         i = 0
         next_cell: Cell | None = None
         while i < len(self.stack) - 1:
-        # for cell, next_stack_cell in self.stack:
             if not next_cell:
                 cell = self.stack[i]
             next_stack_cell = self.stack[i + 1]
@@ -489,9 +530,7 @@ class Maze():
                     cell.special = " P"
                 next_cell = None
             else:
-                # if negative we need to go up("N")
                 vertical_d = next_stack_cell.position[1] - cell.position[1]
-                # if negative we need to go left("W")
                 horisontal_d = next_stack_cell.position[0] - cell.position[0]
                 if abs(vertical_d) > abs(horisontal_d):
                     if vertical_d > 0:
@@ -505,17 +544,9 @@ class Maze():
                         directon_for_dig = "W"
                 neighbours = self.get_visited_neighbours(cell)
                 next_cell = neighbours.get(directon_for_dig)
-                # self.stack_cell_linker(cell, next_stack_cell)
-                # choose the cell that is closer to the next stack cell
-
-                # next_sell = neighbours
-            
-                print(directon_for_dig)
             if cell.special != " S":
                 cell.special = " P"
                 cell.path = True
-                # check if wall are open in certain direction
             i += 1
-                # directon_to_the_end
-        if len(self.stack) > 0:
-            last = self.stack[-1]
+        # if len(self.stack) > 0:
+        #     last = self.stack[-1]
