@@ -22,7 +22,7 @@ def time_slower(seconds: int | float):
             return result
         return wrapper
     return decorator
-        
+
 
 class Cell():
     def __init__(
@@ -51,10 +51,15 @@ class Cell():
         if side == "E" or side == "W":
             return "██"
 
+    # @time_slower(0.001)
     def representation(self):
         return [
             ["██", self.wall(self.n, "N"), "██"],
-            [self.wall(self.w, "W"), self.special, self.wall(self.e, "E")],
+            # [self.wall(self.w, "W"), self.special, self.wall(self.e, "E")],
+            [self.wall(self.w, "W"),
+             " P" if (
+                 self.path is True and self.special != " S") else self.special,
+             self.wall(self.e, "E")],
             ["██", self.wall(self.s, "S"), "██"]
             ]
 
@@ -67,7 +72,7 @@ class Cell():
             self.s = False
         if wall == "W":
             self.w = False
-    
+
     def count_open_walls(self) -> int:
         i = 0
         if self.n is False:
@@ -79,9 +84,6 @@ class Cell():
         if self.w is False:
             i += 1
         return i
-
-    def print(self):
-        ...
 
 
 class Maze():
@@ -125,14 +127,22 @@ class Maze():
             self.grid.append(row)
             i += 1
 
-    def print_grid(self) -> None:
+    def print_grid(
+            self, show_path: bool = False, color: str = "\033[0m"
+            ) -> None:
         for row in self.grid:
             i = 0
             while i < 3:
                 for cell in row:
                     k = 0
                     while k < 3:
-                        print(cell.representation()[i][k], end="")
+                        # print(cell.representation()[i][k], end="")
+                        # new stuff for colors
+                        part = cell.representation()[i][k]
+                        if part == "██":
+                            print(color + part + "\033[0m", end="")
+                        else:
+                            print(part, end="")
                         k += 1
                 print()
                 i += 1
@@ -282,9 +292,7 @@ class Maze():
         #         self.dig_into_depth(next_cell)
         #         if self.get_neighbours(cell) == 0:
         #             self.stack.remove(cell)
-                
-                # cell.visited = True
-    # go till you have where to go
+
     def dig_into_depth(self, next_cell: Cell) -> None:
         current = None
         # while len(self.get_neighbours(next_cell)) > 0:
@@ -324,7 +332,7 @@ class Maze():
         #             neighbours = self.get_neighbours(cell)
         #             if len(neighbours) > 0:
         #                 self.stage3()
-        
+
     # for the dead end
     def get_neighbours_of_the_dead_end(self, cell: Cell) -> dict:
         x, y = cell.position
@@ -334,7 +342,7 @@ class Maze():
             print(1, end="")
             nb = self.grid[y][x - 1]
             # if nb.special not in (" S", " E", "42", " P"):
-            if nb.special == "  ":
+            if nb.special == "  " or nb.special == " P":
                 # if nb.e is True:
                 result.update({"W": nb})
         if x + 1 < self.width:
@@ -408,6 +416,7 @@ class Maze():
 
     # MazeGen actually. my alco algo
     def path_gen(self) -> None:
+        print(self.grid)
         start = self.grid[self.entry[1]][self.entry[0]]
         current = start
         next_cell: Cell = None
@@ -451,8 +460,8 @@ class Maze():
         self.build_the_path()
         self.stage2()
         self.stage3()
-        if self.perfect is False:
-            self.dead_end_open()
+        # if self.perfect is False:
+        #     self.dead_end_open()
 
     @staticmethod
     def distance(point_a: tuple[int, int], point_b: tuple[int, int]) -> float:
@@ -474,7 +483,8 @@ class Maze():
             a = cell.position
             b = next_stack_cell.position
             if abs(b[0] - a[0]) + abs(b[1] - a[1]) == 1:
-                cell.path = True
+                if cell.special != " S":
+                    cell.path = True
                 if cell.position != self.entry:
                     cell.special = " P"
                 next_cell = None
