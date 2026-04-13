@@ -1,9 +1,9 @@
 from pydantic import BaseModel, model_validator, Field
 # import sys
-import os
+# import os
 
-terminal_width = os.get_terminal_size()
-print(terminal_width)
+# terminal_width = os.get_terminal_size()
+# print(terminal_width)
 
 
 class ParsingError(Exception):
@@ -56,7 +56,7 @@ def parsing(data: str) -> dict:
 class InputCheck(BaseModel):
     # we do not run the amazing if the terminal width is not big enough
     # cell is represented as 6 colomns
-    width: int = Field(gt=0, lt=int(terminal_width[0] / 6))
+    width: int = Field(gt=0)
     height: int = Field(gt=0)
     entry: tuple[int, int]
     exit: tuple[int, int]
