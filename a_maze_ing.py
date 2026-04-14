@@ -49,8 +49,8 @@ from os import system
 def run_menu(my_maze: Maze) -> None:
     show_path = False 
 
-    colors = ["\033[0m", "\033[31m", "\033[32m", "\033[33m", "\033[34m"]
-    #          default       red          green       yellow      blue
+    colors = ["\033[0m", "\033[31m", "\033[32m", "\033[33m", "\033[0;35m"]
+    #          default       red          green       yellow      purple
     color_index = 0
 
     while True:
@@ -76,7 +76,6 @@ def run_menu(my_maze: Maze) -> None:
             my_maze.path_gen()
         elif choice == "2":
             show_path = not show_path
-            print("In progress...")
         elif choice == "3":
             color_index = (color_index + 1) % len(colors)
         elif choice == "4":
