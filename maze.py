@@ -58,7 +58,9 @@ class Cell():
             # [self.wall(self.w, "W"), self.special, self.wall(self.e, "E")],
             [self.wall(self.w, "W"),
              " P" if (
-                 self.path is True and self.special != " S") else self.special,
+                 self.path is True and
+                 self.special != " S" and
+                 self.special != " E") else self.special,
              self.wall(self.e, "E")],
             ["██", self.wall(self.s, "S"), "██"]
             ]
@@ -194,18 +196,6 @@ class Maze():
                 self.grid[c_y + j][c_x + i].position = (c_x + i, c_y + j)
                 i += 1
             j += 1
-        # j = 0
-        # for j, row in enumerate(ft):
-        #     i = 0
-        #     while i < len(ft[j]):
-        #         if ((c_x + i, c_y + j) == self.entry or
-        #                 (c_x + i, c_y + j) == self.exit):
-        #             if ft[j][i].visited is True:
-        #                 raise Exception(
-        #                   "Error: Entry and Exit must be appart from 42 logo"
-        #                     )
-        #         self.grid[c_y + j][c_x + i] = ft[j][i]
-        #         i += 1
 
     @staticmethod
     def remove_walls_in_between(
@@ -247,11 +237,11 @@ class Maze():
                     result.update({"E": self.grid[y][x + 1]})
         if y - 1 >= 0:
             if self.grid[y - 1][x].visited is True:
-                if self.grid[y - 1][x].n is False:
+                if self.grid[y - 1][x].s is False:
                     result.update({"N": self.grid[y - 1][x]})
         if y + 1 < self.height:
             if self.grid[y + 1][x].visited is True:
-                if self.grid[y + 1][x].s is False:
+                if self.grid[y + 1][x].n is False:
                     result.update({"S": self.grid[y + 1][x]})
         return result
 
@@ -302,30 +292,22 @@ class Maze():
         if x - 1 >= 0:
             print(1, end="")
             nb = self.grid[y][x - 1]
-            # if nb.special not in (" S", " E", "42", " P"):
             if nb.special == "  " or nb.special == " P":
-                # if nb.e is True:
                 result.update({"W": nb})
         if x + 1 < self.width:
             print(2, end="")
             nb = self.grid[y][x + 1]
-            # if nb.special not in (" S", " E", "42", " P"):
-                # if nb.w is True:
             if nb.special == "  ":
                 result.update({"E": nb})
         if y - 1 >= 0:
             print(3, end="")
             nb = self.grid[y - 1][x]
-            # if nb.special not in (" S", " E", "42", " P"):
             if nb.special == "  ":
-                # if nb.s is True:
                 result.update({"N": nb})
         if y + 1 < self.height:
             print(4, end="")
             nb = self.grid[y + 1][x]
-            # if nb.special not in (" S", " E", "42", " P"):
             if nb.special == "  ":
-                # if nb.n is True:
                 result.update({"S": nb})
         return result
 
@@ -445,5 +427,10 @@ class Maze():
                 cell.special = " P"
             cell.path = True
             i += 1
+        self.stack[-1].path = True
+        neighbours = self.get_visited_neighbours(self.stack[-1])
+        for next_cell in neighbours.values():
+            if next_cell.special == " E":
+                next_cell.path = True
         # if len(self.stack) > 0:
         #     last = self.stack[-1]
