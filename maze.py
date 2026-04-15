@@ -43,7 +43,7 @@ class Cell():
         self.parent: Cell | None = None
         self.dead: bool = False
 
-    def wall(self, wall: bool, side: str, is_path: bool = False) -> str:
+    def wall(self, wall: bool, side: str, is_path: bool = False, is_42: bool = False) -> str:
         # if not wall:
         #     return "  "
         # if side == "N" or side == "S":
@@ -51,29 +51,48 @@ class Cell():
         # if side == "E" or side == "W":
         #     return "██"
         blue_square = "\033[34m██\033[0m"
+        white_corridor = "\033[47m  \033[0m"
+        yellow_square = "\033[33m██\033[0m"
+
+        if is_42:
+            return yellow_square
+        
         if not wall:
             if is_path:
                 return blue_square
-            return "  "
+            return white_corridor
         return "██"
 
     # @time_slower(0.001)
-    def representation(self, show_path: bool = False, neigh_path: dict = None):
+    def representation(self, show_path: bool = False, neigh_path: dict = None, neigh_42: dict = None):
         if neigh_path is None:
             neigh_path = {"N": False, "E": False, "S": False, "W": False}
         
+        if neigh_42 is None:
+            neigh_42 = {"N": False, "E": False, "S": False, "W": False}
+        
         blue_square = "\033[34m██\033[0m"
-        if show_path and self.path and self.special not in (" S", " E"):
+        white_corridor = "\033[47m  \033[0m"
+        yellow_square = "\033[33m██\033[0m"
+        
+        if show_path and self.path and "\033[" not in self.special:
             center = blue_square
         else:
-            center = self.special
+            if self.special == "  ":
+                center = white_corridor
+            else:
+                center = self.special
 
-        w_char = "██"
+        nw_char = yellow_square if (neigh_42["N"] and neigh_42["W"]) else "██"
+        ne_char = yellow_square if (neigh_42["N"] and neigh_42["E"]) else "██"
+        sw_char = yellow_square if (neigh_42["S"] and neigh_42["W"]) else "██"
+        se_char = yellow_square if (neigh_42["S"] and neigh_42["E"]) else "██"
+
         return [
-            [w_char, self.wall(self.n, "N", show_path and neigh_path["N"]), w_char],
-            [self.wall(self.w, "W", show_path and neigh_path["W"]), center, 
-             self.wall(self.e, "E", show_path and neigh_path["E"])],
-            [w_char, self.wall(self.s, "S", show_path and neigh_path["S"]), w_char]
+            [nw_char, self.wall(self.n, "N", show_path and neigh_path["N"], neigh_42["N"]), ne_char],
+            [self.wall(self.w, "W", show_path and neigh_path["W"], neigh_42["W"]), center, 
+             self.wall(self.e, "E", show_path and neigh_path["E"], neigh_42["E"])],
+            [sw_char, self.wall(self.s, "S", show_path and neigh_path["S"], neigh_42["S"]), se_char]
         ]
 
     def open_wall(self, wall: str) -> None:
@@ -145,23 +164,35 @@ class Maze():
             i = 0
             while i < 3:
                 for x, cell in enumerate(row):
-                    # if neighbours on the way
-                    # bridge paints if current cell and neighb on the way
-                    neighs = {
-                        "N": (y > 0 and self.grid[y-1][x].path and cell.path),
-                        "S": (y < self.height-1 and self.grid[y+1][x].path and cell.path),
-                        "E": (x < self.width-1 and self.grid[y][x+1].path and cell.path),
-                        "W": (x > 0 and self.grid[y][x-1].path and cell.path)
+                    # blue path
+                    def is_p(c): 
+                        return c.path or "\033[32m" in c.special or "\033[31m" in c.special
+                    
+                    neighs_path = {
+                        "N": (y > 0 and is_p(self.grid[y-1][x]) and is_p(cell)),
+                        "S": (y < self.height-1 and is_p(self.grid[y+1][x]) and is_p(cell)),
+                        "E": (x < self.width-1 and is_p(self.grid[y][x+1]) and is_p(cell)),
+                        "W": (x > 0 and is_p(self.grid[y][x-1]) and is_p(cell))
+                    }
+
+                    # 42 logic
+                    def is_42(c):
+                        return "\033[33m" in c.special
+
+                    neighs_42 = {
+                        "N": (y > 0 and is_42(self.grid[y-1][x]) and is_42(cell)),
+                        "S": (y < self.height-1 and is_42(self.grid[y+1][x]) and is_42(cell)),
+                        "E": (x < self.width-1 and is_42(self.grid[y][x+1]) and is_42(cell)),
+                        "W": (x > 0 and is_42(self.grid[y][x-1]) and is_42(cell))
                     }
                     
-                    # now give it to representation
-                    rep = cell.representation(show_path=show_path, neigh_path=neighs)
+                    rep = cell.representation(show_path=show_path, neigh_path=neighs_path, neigh_42=neighs_42)
                     
                     k = 0
                     while k < 3:
                         part = rep[i][k]
-                        # paint def walls deff color, blue path dont touch
-                        if part == "██" and "\033[34m" not in part:
+                        # paint only black walls dont touch color blocks
+                        if part == "██" and "\033[" not in part:
                             print(color + part + "\033[0m", end="")
                         else:
                             print(part, end="")

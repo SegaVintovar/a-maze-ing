@@ -49,15 +49,34 @@ from os import system
 def run_menu(my_maze: Maze) -> None:
     show_path = False 
 
-    colors = ["\033[0m", "\033[31m", "\033[32m", "\033[33m", "\033[0;35m"]
-    #          default       red          green       yellow      purple
+    colors = [
+        "\033[30m", # black
+        "\033[31m", # red
+        "\033[32m", # green
+        "\033[0;35m", # purple
+        "\033[36m", # cyan
+        "\033[90m", # dark gray
+        "\033[96m"  # bright cyan
+        ]
     color_index = 0
+
+    yellow_square = "\033[33m██\033[0m"
+    for row in my_maze.grid:
+        for cell in row:
+            if cell.special == "42":
+                cell.special = yellow_square
 
     while True:
         """Escape sequence to clean terminal screen"""
         print("\033[H\033[J", end="")
-        system("virt_env/bin/bash clear")
+        # system("virt_env/bin/bash clear")
         my_maze.print_grid(show_path, colors[color_index])
+        x,y = my_maze.entry
+        x1,y1 = my_maze.exit
+        my_maze.grid[y][x].path = True
+        my_maze.grid[y1][x1].path = True
+
+
         # my_maze.print_grid()
 
         print("\n=== A-Maze-ing===")
@@ -74,6 +93,12 @@ def run_menu(my_maze: Maze) -> None:
             my_maze.create_grid()
             my_maze.insert_forty2(my_maze.ft())
             my_maze.path_gen()
+
+            for row in my_maze.grid:
+                for cell in row:
+                    if cell.special == "42":
+                        cell.special = yellow_square
+            
         elif choice == "2":
             show_path = not show_path
         elif choice == "3":
