@@ -421,8 +421,8 @@ class Maze():
             a = cell.position
             b = next_stack_cell.position
             if abs(b[0] - a[0]) + abs(b[1] - a[1]) == 1:
-                if cell.special != " S":
-                    cell.path = True
+                # if cell.special != " S":
+                #     cell.path = True
                 if cell.position != self.entry:
                     cell.special = " P"
                 next_cell = None
@@ -443,7 +443,7 @@ class Maze():
                 next_cell = neighbours.get(directon_for_dig)
             if cell.special != " S":
                 cell.special = " P"
-                cell.path = True
+            cell.path = True
             i += 1
         # if len(self.stack) > 0:
         #     last = self.stack[-1]

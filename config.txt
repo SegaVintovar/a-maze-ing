@@ -4,7 +4,7 @@ PERFECT=False
 ENTRY=0,0
 EXIT=10,13
 OUTPUT_FILE=maze.txt
-# SEED=19
+SEED=19
 
 # Lines starting with # are comments and must be ignored.
 # 15, 
