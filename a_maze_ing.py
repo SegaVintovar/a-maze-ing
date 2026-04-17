@@ -69,15 +69,13 @@ def run_menu(my_maze: Maze) -> None:
     while True:
         """Escape sequence to clean terminal screen"""
         print("\033[H\033[J", end="")
-        # system("virt_env/bin/bash clear")
-        my_maze.print_grid(show_path, colors[color_index])
+
         x,y = my_maze.entry
         x1,y1 = my_maze.exit
         my_maze.grid[y][x].path = True
         my_maze.grid[y1][x1].path = True
 
-
-        # my_maze.print_grid()
+        my_maze.print_grid(show_path, colors[color_index])
 
         print("\n=== A-Maze-ing===")
         print("1. Regenerate maze")

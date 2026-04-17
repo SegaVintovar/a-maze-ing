@@ -73,26 +73,25 @@ class Cell():
         
         blue_square = "\033[34m██\033[0m"
         white_corridor = "\033[47m  \033[0m"
-        yellow_square = "\033[33m██\033[0m"
-        
-        if show_path and self.path and "\033[" not in self.special:
-            center = blue_square
-        else:
-            if self.special == "  ":
-                center = white_corridor
-            else:
-                center = self.special
 
-        nw_char = yellow_square if (neigh_42["N"] and neigh_42["W"]) else "██"
-        ne_char = yellow_square if (neigh_42["N"] and neigh_42["E"]) else "██"
-        sw_char = yellow_square if (neigh_42["S"] and neigh_42["W"]) else "██"
-        se_char = yellow_square if (neigh_42["S"] and neigh_42["E"]) else "██"
+        if "S" in self.special:
+            center = "\033[92;47m██\033[0m"
+        elif "E" in self.special:
+            center = "\033[91;47m██\033[0m"
+        elif show_path and self.path and "\033[" not in self.special: # Тепер це elif!
+            center = blue_square
+        elif self.special == "  ":
+            center = white_corridor
+        else:
+            center = self.special
+
+        w_char = "██"
 
         return [
-            [nw_char, self.wall(self.n, "N", show_path and neigh_path["N"], neigh_42["N"]), ne_char],
+            [w_char, self.wall(self.n, "N", show_path and neigh_path["N"], neigh_42["N"]), w_char],
             [self.wall(self.w, "W", show_path and neigh_path["W"], neigh_42["W"]), center, 
              self.wall(self.e, "E", show_path and neigh_path["E"], neigh_42["E"])],
-            [sw_char, self.wall(self.s, "S", show_path and neigh_path["S"], neigh_42["S"]), se_char]
+            [w_char, self.wall(self.s, "S", show_path and neigh_path["S"], neigh_42["S"]), w_char]
         ]
 
     def open_wall(self, wall: str) -> None:
