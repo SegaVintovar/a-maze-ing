@@ -60,6 +60,8 @@ class Cell():
         if not wall:
             if is_path:
                 return blue_square
+            if is_42:
+                return yellow_square
             return white_corridor
         return "██"
 
@@ -78,9 +80,9 @@ class Cell():
             center = "\033[92;47m██\033[0m"
         elif "E" in self.special:
             center = "\033[91;47m██\033[0m"
-        elif show_path and self.path and "\033[" not in self.special: # Тепер це elif!
+        elif show_path and self.path and "\033[" not in self.special:
             center = blue_square
-        elif self.special == "  ":
+        elif self.special == "  " or " P":
             center = white_corridor
         else:
             center = self.special
