@@ -3,7 +3,7 @@ from time import sleep
 from functools import wraps
 from typing import Callable
 import math
-
+# from .a_maze_ing import write_into_file
 
 OPPOSSITE_DIR = {
     "N": "S",
@@ -246,18 +246,6 @@ class Maze():
                 self.grid[c_y + j][c_x + i].position = (c_x + i, c_y + j)
                 i += 1
             j += 1
-        # j = 0
-        # for j, row in enumerate(ft):
-        #     i = 0
-        #     while i < len(ft[j]):
-        #         if ((c_x + i, c_y + j) == self.entry or
-        #                 (c_x + i, c_y + j) == self.exit):
-        #             if ft[j][i].visited is True:
-        #                 raise Exception(
-        #                   "Error: Entry and Exit must be appart from 42 logo"
-        #                     )
-        #         self.grid[c_y + j][c_x + i] = ft[j][i]
-        #         i += 1
 
     @staticmethod
     def remove_walls_in_between(
@@ -299,26 +287,13 @@ class Maze():
                     result.update({"E": self.grid[y][x + 1]})
         if y - 1 >= 0:
             if self.grid[y - 1][x].visited is True:
-                if self.grid[y - 1][x].n is False:
+                if self.grid[y - 1][x].s is False:
                     result.update({"N": self.grid[y - 1][x]})
         if y + 1 < self.height:
             if self.grid[y + 1][x].visited is True:
-                if self.grid[y + 1][x].s is False:
+                if self.grid[y + 1][x].n is False:
                     result.update({"S": self.grid[y + 1][x]})
         return result
-
-    # def finalize_v1(self) -> None:
-    #     for row in self.grid:
-    #         for cell in row:
-    #             if cell.visited is False and cell.special != "42":
-    #                 neighbours = self.get_visited_neighbours(cell)
-    #                 # print(neighbours, cell.position)
-    #                 if len(neighbours) > 0:
-    #                     direction, next_cell = random.choice(
-    #                         list(neighbours.items()))
-    #                     Maze.remove_walls_in_between(
-    #                         cell, direction, next_cell)
-    #                     cell.visited = True
 
     def stage2(self) -> None:
         while self.stack:
@@ -326,29 +301,9 @@ class Maze():
             neighbours = self.get_neighbours(current)
             if len(neighbours) > 0:
                 self.dig_into_depth(current)
-                # direction, next_cell = random.choice(
-                #     list(neighbours.items()))
-                # Maze.remove_walls_in_between(
-                #     current, direction, next_cell)
-        print(self.stack)
-        # in case we want to loop from the end
-        # for cell in reversed(self.stack):
-        #     # for cell in self.stack:
-        #     neighbours = self.get_neighbours(cell)
-        #     print(neighbours, cell.position)
-        #     if len(neighbours) > 0:
-        #         direction, next_cell = random.choice(
-        #             list(neighbours.items()))
-        #         Maze.remove_walls_in_between(
-        #             cell, direction, next_cell)
-        #         self.dig_into_depth(next_cell)
-        #         if self.get_neighbours(cell) == 0:
-        #             self.stack.remove(cell)
 
     def dig_into_depth(self, next_cell: Cell) -> None:
         current = None
-        # while len(self.get_neighbours(next_cell)) > 0:
-        #     ...
         while True:
             # if current is None:
             current = next_cell
@@ -378,12 +333,6 @@ class Maze():
                             cell, direction, next_cell)
                         next_cell.visited = True
                         self.dig_into_depth(next_cell)
-        # for row in self.grid:
-        #     for cell in row:
-        #         if cell.visited is True:
-        #             neighbours = self.get_neighbours(cell)
-        #             if len(neighbours) > 0:
-        #                 self.stage3()
 
     # for the dead end
     def get_neighbours_of_the_dead_end(self, cell: Cell) -> dict:
@@ -401,40 +350,19 @@ class Maze():
         if x + 1 < self.width:
             print(2, end="")
             nb = self.grid[y][x + 1]
-            # if nb.special not in (" S", " E", "42", " P"):
-                # if nb.w is True:
             if nb.special == "  ":
                 result.update({"E": nb})
         if y - 1 >= 0:
             print(3, end="")
             nb = self.grid[y - 1][x]
-            # if nb.special not in (" S", " E", "42", " P"):
             if nb.special == "  ":
-                # if nb.s is True:
                 result.update({"N": nb})
         if y + 1 < self.height:
             print(4, end="")
             nb = self.grid[y + 1][x]
-            # if nb.special not in (" S", " E", "42", " P"):
             if nb.special == "  ":
-                # if nb.n is True:
                 result.update({"S": nb})
         return result
-        
-
-
-
-        # for row in self.grid:
-        #     for cell in row:
-        #         if cell.visited is True and cell.special != "42":
-        #             neighbours = self.get_neighbours(cell)
-        #             print(neighbours, cell.position)
-        #             if len(neighbours) > 0:
-        #                 direction, next_cell = random.choice(
-        #                     list(neighbours.items()))
-        #                 Maze.remove_walls_in_between(
-        #                     cell, direction, next_cell)
-        #                 cell.visited = True
 
     def dead_end_open(self) -> None:
         to_choose = []
@@ -447,25 +375,18 @@ class Maze():
         while True:
             if len(to_choose) > 0:
                 his_choice = random.choice(to_choose)
-                print(his_choice.position, end="")
                 neighbours = self.get_neighbours_of_the_dead_end(his_choice)
-                # neighbours = self.get_visited_neighbours(his_choice)
-                print(neighbours)
                 if len(neighbours) > 0:
-                    direction, next_cell = random.choice(list(neighbours.items()))
-                    Maze.remove_walls_in_between(his_choice, direction, next_cell)
+                    direction, next_cell = random.choice(
+                        list(neighbours.items()))
+                    Maze.remove_walls_in_between(
+                        his_choice, direction, next_cell)
                     to_choose.remove(his_choice)
                     i += 1
-                    print(direction)
-                    
-                    # self.dead_end_open()
                 else:
                     to_choose.remove(his_choice)
-                    # break
             else:
                 break
-            # choose the neighbour that is not on the south or east or 42,
-        # 
 
     def stage1(self) -> None:
         start = self.grid[self.entry[1]][self.entry[0]]
@@ -476,7 +397,6 @@ class Maze():
                 current = next_cell
                 next_cell = None
             neighbours = self.get_neighbours(current)
-            # print(neighbours, current.position)
             if len(neighbours) > 0:
                 direction = None
                 for dir, cell in list(neighbours.items()):
@@ -504,61 +424,20 @@ class Maze():
             else:
                 current.visited = True
                 break
-        # for cell in self.stack:
-            # print(cell.position, end=", ")
         if self.stack:
             # self.stack[-1].special = " P"
             self.stack[-1].path = True
 
     # MazeGen actually. my alco algo
     def path_gen(self) -> None:
-        # print(self.grid)
-        # start = self.grid[self.entry[1]][self.entry[0]]
-        # current = start
-        # next_cell: Cell = None
-        # while True:
-        #     if next_cell:
-        #         current = next_cell
-        #         next_cell = None
-        #     neighbours = self.get_neighbours(current)
-        #     # print(neighbours, current.position)
-        #     if len(neighbours) > 0:
-        #         direction = None
-        #         for dir, cell in list(neighbours.items()):
-        #             if cell.special == " E":
-        #                 next_cell = cell
-        #                 direction = dir
-        #                 break
-        #         if not next_cell:
-        #             direction, next_cell = random.choice(
-        #                 list(neighbours.items()))
-        #         Maze.remove_walls_in_between(current, direction, next_cell)
-        #         current.visited = True
-        #         next_cell.parent = current
-        #         if next_cell.special == " E":
-        #             self.stack.append(current)
-        #             next_cell.visited = True
-        #             break
-        #         neighbours.pop(direction)
-        #         if len(neighbours) >= 0:
-        #             self.stack.append(current)
-        #     elif len(self.stack) != 0:
-        #         cell.dead = True
-        #         next_cell = self.stack.pop(-1)
-        #         current.visited = True
-        #     else:
-        #         current.visited = True
-        #         break
-        # # for cell in self.stack:
-        #     # print(cell.position, end=", ")
-        # if self.stack:
-        #     self.stack[-1].special = " P"
         self.stage1()
         self.build_the_path()
         self.stage2()
         self.stage3()
-        
-
+        if self.perfect is False:
+            self.dead_end_open()
+        # write_into_file(
+        #     self.grid, self.output_file, self.entry, self.exit. self.path)
 
     @staticmethod
     def distance(point_a: tuple[int, int], point_b: tuple[int, int]) -> float:
@@ -579,10 +458,10 @@ class Maze():
             a = cell.position
             b = next_stack_cell.position
             if abs(b[0] - a[0]) + abs(b[1] - a[1]) == 1:
-                if cell.special != " S":
-                    cell.path = True
-                # if cell.position != self.entry:
-                #     cell.special = " P"
+                # if cell.special != " S":
+                #     cell.path = True
+                if cell.position != self.entry:
+                    cell.special = " P"
                 next_cell = None
             else:
                 vertical_d = next_stack_cell.position[1] - cell.position[1]
@@ -600,8 +479,13 @@ class Maze():
                 neighbours = self.get_visited_neighbours(cell)
                 next_cell = neighbours.get(directon_for_dig)
             if cell.special != " S":
-                # cell.special = " P"
-                cell.path = True
+                cell.special = " P"
+            cell.path = True
             i += 1
+        self.stack[-1].path = True
+        neighbours = self.get_visited_neighbours(self.stack[-1])
+        for next_cell in neighbours.values():
+            if next_cell.special == " E":
+                next_cell.path = True
         # if len(self.stack) > 0:
         #     last = self.stack[-1]
