@@ -59,8 +59,8 @@ def get_directions(maze: Maze) -> str:
         right_dir = get_right_dir(current, maze)
         if right_dir:
             dir, next_cell = right_dir
-            print(dir, next_cell.position)
-        print(right_dir)
+            # print(dir, next_cell.position)
+        # print(right_dir)
         # print(right_dir)
         # for d, cell in right_dir.items():
         #     dir = d
@@ -128,6 +128,7 @@ def run_menu(my_maze: Maze) -> None:
             my_maze.create_grid()
             my_maze.insert_forty2(my_maze.ft())
             my_maze.path_gen()
+            write_into_file(my_maze)
         elif choice == "2":
             if show_path is False:
                 show_path = True
@@ -170,10 +171,10 @@ def main() -> None:
             my_maze.create_grid()
             my_maze.insert_forty2(my_maze.ft())
             my_maze.path_gen()
-            print_grid_of_path(my_maze.grid)
+            # print_grid_of_path(my_maze.grid)
             # print_grid(my_maze.grid)
             write_into_file(my_maze)
-            my_maze.print_grid()
+            # my_maze.print_grid()
             run_menu(my_maze)
 
         except Exception as e:

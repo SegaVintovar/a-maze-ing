@@ -9,7 +9,7 @@ debug:
 	virt_env/bin/python3 -m pdb -m a_maze_ing
 
 clean:
-	rm __pycahce__
+	rm -rf __pycache__/
 # https://earthly.dev/blog/python-makefile/
 
 lint:
