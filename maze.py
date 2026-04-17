@@ -82,7 +82,7 @@ class Cell():
             center = "\033[91;47m██\033[0m"
         elif show_path and self.path and "\033[" not in self.special:
             center = blue_square
-        elif self.special == "  " or " P":
+        elif self.special == "  " or self.special == " P":
             center = white_corridor
         else:
             center = self.special
@@ -204,11 +204,11 @@ class Maze():
     @staticmethod
     def ft() -> list:
         pre_ft = [
-            [1, 0, 1, 0, 1, 1, 1],
-            [1, 0, 1, 0, 0, 0, 1],
             [1, 1, 1, 0, 1, 1, 1],
-            [0, 0, 1, 0, 1, 0, 0],
-            [0, 0, 1, 0, 1, 1, 1]
+            [1, 0, 0, 0, 1, 0, 1],
+            [1, 1, 1, 0, 1, 1, 1],
+            [1, 0, 1, 0, 0, 0, 1],
+            [1, 1, 1, 0, 1, 1, 1]
         ]
         result = []
         y = 0
@@ -342,27 +342,27 @@ class Maze():
         result = {}
         # checing from 4 sides
         if x - 1 >= 0:
-            print(1, end="")
+            # print(1, end="")
             nb = self.grid[y][x - 1]
             # if nb.special not in (" S", " E", "42", " P"):
-            if nb.special == "  ":
+            if nb.special == "  " or nb.special == " P":
             # or nb.special == " P":
                 # if nb.e is True:
                 result.update({"W": nb})
         if x + 1 < self.width:
-            print(2, end="")
+            # print(2, end="")
             nb = self.grid[y][x + 1]
-            if nb.special == "  ":
+            if nb.special == "  " or nb.special == " P":
                 result.update({"E": nb})
         if y - 1 >= 0:
-            print(3, end="")
+            # print(3, end="")
             nb = self.grid[y - 1][x]
-            if nb.special == "  ":
+            if nb.special == "  " or nb.special == " P":
                 result.update({"N": nb})
         if y + 1 < self.height:
-            print(4, end="")
+            # print(4, end="")
             nb = self.grid[y + 1][x]
-            if nb.special == "  ":
+            if nb.special == "  " or nb.special == " P":
                 result.update({"S": nb})
         return result
 
@@ -435,11 +435,25 @@ class Maze():
         self.stage1()
         self.build_the_path()
         self.stage2()
-        self.stage3()
+        # self.stage3()
         if self.perfect is False:
             self.dead_end_open()
+        # all cells.path = False
+        # starting from the start. checking parents
+        # if there are two options to go, create a new stack of cells
+        # 
         # write_into_file(
         #     self.grid, self.output_file, self.entry, self.exit. self.path)
+
+
+    def pathfind(self):
+        start = self.grid[self.entry[1]][self.exit[0]]
+        gstack = []
+        current = start
+        gstack.append(start)
+        # get neighbours with open walls
+        # if there are more then one we need to start dig in more directions
+        # how?
 
     @staticmethod
     def distance(point_a: tuple[int, int], point_b: tuple[int, int]) -> float:

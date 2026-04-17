@@ -3,4 +3,4 @@ from .parsing import parsing, ParsingError
 
 all = [Cell, Maze, parsing, ParsingError]
 
-__author__ = "Valentyn"
+__author__ = "Valentyn/Oleksandr"
