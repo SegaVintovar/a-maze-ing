@@ -43,27 +43,56 @@ class Cell():
         self.parent: Cell | None = None
         self.dead: bool = False
 
-    def wall(self, wall: bool, side: str) -> str:
+    def wall(self, wall: bool, side: str, is_path: bool = False, is_42: bool = False) -> str:
+        # if not wall:
+        #     return "  "
+        # if side == "N" or side == "S":
+        #     return "██"
+        # if side == "E" or side == "W":
+        #     return "██"
+        blue_square = "\033[34m██\033[0m"
+        white_corridor = "\033[47m  \033[0m"
+        yellow_square = "\033[33m██\033[0m"
+
+        if is_42:
+            return yellow_square
+        
         if not wall:
-            return "  "
-        if side == "N" or side == "S":
-            return "██"
-        if side == "E" or side == "W":
-            return "██"
+            if is_path:
+                return blue_square
+            return white_corridor
+        return "██"
 
     # @time_slower(0.001)
-    def representation(self):
+    def representation(self, show_path: bool = False, neigh_path: dict = None, neigh_42: dict = None):
+        if neigh_path is None:
+            neigh_path = {"N": False, "E": False, "S": False, "W": False}
+        
+        if neigh_42 is None:
+            neigh_42 = {"N": False, "E": False, "S": False, "W": False}
+        
+        blue_square = "\033[34m██\033[0m"
+        white_corridor = "\033[47m  \033[0m"
+
+        if "S" in self.special:
+            center = "\033[92;47m██\033[0m"
+        elif "E" in self.special:
+            center = "\033[91;47m██\033[0m"
+        elif show_path and self.path and "\033[" not in self.special: # Тепер це elif!
+            center = blue_square
+        elif self.special == "  ":
+            center = white_corridor
+        else:
+            center = self.special
+
+        w_char = "██"
+
         return [
-            ["██", self.wall(self.n, "N"), "██"],
-            # [self.wall(self.w, "W"), self.special, self.wall(self.e, "E")],
-            [self.wall(self.w, "W"),
-             " P" if (
-                 self.path is True and
-                 self.special != " S" and
-                 self.special != " E") else self.special,
-             self.wall(self.e, "E")],
-            ["██", self.wall(self.s, "S"), "██"]
-            ]
+            [w_char, self.wall(self.n, "N", show_path and neigh_path["N"], neigh_42["N"]), w_char],
+            [self.wall(self.w, "W", show_path and neigh_path["W"], neigh_42["W"]), center, 
+             self.wall(self.e, "E", show_path and neigh_path["E"], neigh_42["E"])],
+            [w_char, self.wall(self.s, "S", show_path and neigh_path["S"], neigh_42["S"]), w_char]
+        ]
 
     def open_wall(self, wall: str) -> None:
         if wall == "N":
@@ -129,19 +158,40 @@ class Maze():
             self.grid.append(row)
             i += 1
 
-    def print_grid(
-            self, show_path: bool = False, color: str = "\033[0m"
-            ) -> None:
-        for row in self.grid:
+    def print_grid(self, show_path: bool = False, color: str = "\033[0m") -> None:
+        for y, row in enumerate(self.grid):
             i = 0
             while i < 3:
-                for cell in row:
+                for x, cell in enumerate(row):
+                    # blue path
+                    def is_p(c): 
+                        return c.path or "\033[32m" in c.special or "\033[31m" in c.special
+                    
+                    neighs_path = {
+                        "N": (y > 0 and is_p(self.grid[y-1][x]) and is_p(cell)),
+                        "S": (y < self.height-1 and is_p(self.grid[y+1][x]) and is_p(cell)),
+                        "E": (x < self.width-1 and is_p(self.grid[y][x+1]) and is_p(cell)),
+                        "W": (x > 0 and is_p(self.grid[y][x-1]) and is_p(cell))
+                    }
+
+                    # 42 logic
+                    def is_42(c):
+                        return "\033[33m" in c.special
+
+                    neighs_42 = {
+                        "N": (y > 0 and is_42(self.grid[y-1][x]) and is_42(cell)),
+                        "S": (y < self.height-1 and is_42(self.grid[y+1][x]) and is_42(cell)),
+                        "E": (x < self.width-1 and is_42(self.grid[y][x+1]) and is_42(cell)),
+                        "W": (x > 0 and is_42(self.grid[y][x-1]) and is_42(cell))
+                    }
+                    
+                    rep = cell.representation(show_path=show_path, neigh_path=neighs_path, neigh_42=neighs_42)
+                    
                     k = 0
                     while k < 3:
-                        # print(cell.representation()[i][k], end="")
-                        # new stuff for colors
-                        part = cell.representation()[i][k]
-                        if part == "██":
+                        part = rep[i][k]
+                        # paint only black walls dont touch color blocks
+                        if part == "██" and "\033[" not in part:
                             print(color + part + "\033[0m", end="")
                         else:
                             print(part, end="")
@@ -292,7 +342,10 @@ class Maze():
         if x - 1 >= 0:
             print(1, end="")
             nb = self.grid[y][x - 1]
-            if nb.special == "  " or nb.special == " P":
+            # if nb.special not in (" S", " E", "42", " P"):
+            if nb.special == "  ":
+            # or nb.special == " P":
+                # if nb.e is True:
                 result.update({"W": nb})
         if x + 1 < self.width:
             print(2, end="")
@@ -372,7 +425,8 @@ class Maze():
                 current.visited = True
                 break
         if self.stack:
-            self.stack[-1].special = " P"
+            # self.stack[-1].special = " P"
+            self.stack[-1].path = True
 
     # MazeGen actually. my alco algo
     def path_gen(self) -> None:
