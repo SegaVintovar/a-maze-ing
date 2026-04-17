@@ -82,7 +82,7 @@ class Cell():
             center = "\033[91;47m██\033[0m"
         elif show_path and self.path and "\033[" not in self.special:
             center = blue_square
-        elif self.special == "  " or " P":
+        elif self.special == "  " or self.special == " P":
             center = white_corridor
         else:
             center = self.special
