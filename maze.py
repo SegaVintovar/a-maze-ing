@@ -380,9 +380,10 @@ class Maze():
         self.build_the_path()
         self.stage2()
         self.stage3()
+        if self.perfect is False:
+            self.dead_end_open()
         # write_into_file(
         #     self.grid, self.output_file, self.entry, self.exit. self.path)
-
 
     @staticmethod
     def distance(point_a: tuple[int, int], point_b: tuple[int, int]) -> float:
