@@ -1,13 +1,15 @@
 import sys
 from maze import Maze, Cell
-from parsing import parsing
+from parsing import parsing, InputCheck, ParsingError
 from os import system
-
+import random
+# from .parsing import InputCheck, ParsingError
 # Bit Direction
 # 0 (LSB) North
 # 1 East
 # 2 South
 # 3 West
+
 
 def decode(cell: Cell) -> str:
     result = ""
@@ -125,8 +127,8 @@ def run_menu(my_maze: Maze) -> None:
         """Escape sequence to clean terminal screen"""
         print("\033[H\033[J", end="")
 
-        x,y = my_maze.entry
-        x1,y1 = my_maze.exit
+        x, y = my_maze.entry
+        x1, y1 = my_maze.exit
         my_maze.grid[y][x].path = True
         my_maze.grid[y1][x1].path = True
 
@@ -142,7 +144,7 @@ def run_menu(my_maze: Maze) -> None:
         if choice == "1":
             my_maze.grid = []
             my_maze.stack = []
-
+            random.seed(my_maze.seed)
             my_maze.create_grid()
             my_maze.insert_forty2(my_maze.ft())
             my_maze.path_gen()
@@ -151,7 +153,7 @@ def run_menu(my_maze: Maze) -> None:
                 for cell in row:
                     if cell.special == "42":
                         cell.special = yellow_square
-            
+
         elif choice == "2":
             show_path = not show_path
         elif choice == "3":
@@ -169,23 +171,27 @@ def print_grid_of_path(maze: list[list[Cell]]):
                 print("0", end="")
         print()
 
+
 def main() -> None:
     if len(sys.argv) == 2:
         # it can be any file, maybe that ends up on .txt
-        if sys.argv[1] == "config.txt":
+        # if sys.argv[1] == r"^.+\.txt$":
+        try:
             with open(sys.argv[1], "r") as config_file:
                 config_data = config_file.read()
             # try:
                 data_4_maze = parsing(config_data)
+                validated = InputCheck(**data_4_maze)
                 # print(data_4_maze)
-            # except Exception as e:
-            #     print("Parsing error: ", str(e))
+        except Exception as e:
+            print("Parsing error: ", str(e), file="stderr")
+            exit(1)
             #     return
             # else:
-        else:
-            raise Exception("We are expecting config.txt as an argument")
+        # else:
+        #     raise Exception("We are expecting config.txt as an argument")
         try:
-            my_maze = Maze(**data_4_maze)
+            my_maze = Maze(**validated.model_dump())
             my_maze.create_grid()
             my_maze.insert_forty2(my_maze.ft())
             my_maze.path_gen()
@@ -199,7 +205,7 @@ def main() -> None:
             print(str(e))
             exit(1)
     else:
-        print("The Amazing reqiuers 'config.txt' as a given parameter")
+        print("The Amazing reqiuers '<config_file>.txt' as a given parameter")
 
 
 if __name__ == "__main__":

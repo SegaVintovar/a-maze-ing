@@ -42,7 +42,7 @@ def parsing(data: str) -> dict:
                     elif entry[1] == "False":
                         result.update({entry[0].lower(): False})
                 elif entry[0] == "SEED":
-                    result.update({entry[0].lower(): entry[1]})
+                    result.update({entry[0].lower(): int(entry[1])})
                 else:
                     raise ParsingError(f"Unknown parameter: {row}")
             else:
@@ -54,8 +54,6 @@ def parsing(data: str) -> dict:
 
 
 class InputCheck(BaseModel):
-    # we do not run the amazing if the terminal width is not big enough
-    # cell is represented as 6 colomns
     width: int = Field(gt=0)
     height: int = Field(gt=0)
     entry: tuple[int, int]
@@ -70,8 +68,15 @@ class InputCheck(BaseModel):
     seed: int | None = Field(ge=0)
 
     # i can check if the entry and exit are in the grid
-    # @model_validator
-    # def validator(self):
-    #     if self.width * 6 < terminal_width:
-    #         raise ValueError
-    #     return self
+    @model_validator(mode="after")
+    def validator(self):
+        # check start and entry
+        if self.entry[0] >= self.width or self.entry[1] >= self.height:
+            raise ValueError("Entry point is out of Maze bounds")
+        if self.exit[0] >= self.width or self.exit[1] >= self.height:
+            raise ValueError("Exit point is out of Maze bounds")
+        if self.width < 9 or self.height < 7:
+            raise ValueError("Maze size is too small to",
+                             "create a labirynth with '42' logo."
+                             "\nMin size is 9 x 7")
+        return self
