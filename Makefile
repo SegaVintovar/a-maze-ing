@@ -6,7 +6,7 @@ run:
 	virt_env/bin/python3 a_maze_ing.py config.txt
 
 debug:
-	virt_env/bin/python3 -m pdb -m a_maze_ing
+	virt_env/bin/python3 -m pdb -m a_maze_ing config.txt
 
 clean:
 	rm -rf __pycache__/

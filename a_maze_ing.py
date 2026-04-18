@@ -103,7 +103,7 @@ def write_into_file(maze: Maze) -> None:
         raise Exception
 
 
-def run_menu(my_maze: Maze) -> None:
+def run_menu(my_maze: Maze, message: str) -> None:
     show_path = False
 
     colors = [
@@ -126,7 +126,8 @@ def run_menu(my_maze: Maze) -> None:
     while True:
         """Escape sequence to clean terminal screen"""
         print("\033[H\033[J", end="")
-
+        if message != "":
+            print(message)
         x, y = my_maze.entry
         x1, y1 = my_maze.exit
         my_maze.grid[y][x].path = True
@@ -146,7 +147,8 @@ def run_menu(my_maze: Maze) -> None:
             my_maze.stack = []
             random.seed(my_maze.seed)
             my_maze.create_grid()
-            my_maze.insert_forty2(my_maze.ft())
+            if my_maze.height > 6 and my_maze.width > 8:
+                my_maze.insert_forty2(my_maze.ft())
             my_maze.path_gen()
 
             for row in my_maze.grid:
@@ -173,33 +175,39 @@ def print_grid_of_path(maze: list[list[Cell]]):
 
 
 def main() -> None:
+    message = ""
     if len(sys.argv) == 2:
         # it can be any file, maybe that ends up on .txt
-        # if sys.argv[1] == r"^.+\.txt$":
+        # 
         try:
+            # if sys.argv[1] == r"^.+\.txt$":
             with open(sys.argv[1], "r") as config_file:
                 config_data = config_file.read()
             # try:
                 data_4_maze = parsing(config_data)
                 validated = InputCheck(**data_4_maze)
-                # print(data_4_maze)
-        except Exception as e:
-            print("Parsing error: ", str(e), file="stderr")
-            exit(1)
-            #     return
             # else:
-        # else:
-        #     raise Exception("We are expecting config.txt as an argument")
+            #     raise ParsingError(
+            #         "We are expecting .txt file for maze configuration")
+        except ParsingError as p:
+            print(str(p))
+            exit(1)
+        except Exception as e:
+            print("Parsing error: ", str(e.errors()[0]['msg']))
+            exit(1)
         try:
             my_maze = Maze(**validated.model_dump())
             my_maze.create_grid()
-            my_maze.insert_forty2(my_maze.ft())
+            if my_maze.width > 8 and my_maze.height > 6:
+                my_maze.insert_forty2(my_maze.ft())
+            else:
+                message = "Due to the size, 42 logo was omitted"
             my_maze.path_gen()
             # print_grid_of_path(my_maze.grid)
             # print_grid(my_maze.grid)
             write_into_file(my_maze)
             # my_maze.print_grid()
-            run_menu(my_maze)
+            run_menu(my_maze, message)
 
         except Exception as e:
             print(str(e))

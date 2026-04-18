@@ -3,6 +3,7 @@ from time import sleep
 from functools import wraps
 from typing import Callable
 import math
+from collections import deque
 # from .a_maze_ing import write_into_file
 
 OPPOSSITE_DIR = {
@@ -56,7 +57,7 @@ class Cell():
 
         if is_42:
             return yellow_square
-        
+
         if not wall:
             if is_path:
                 return blue_square
@@ -69,10 +70,10 @@ class Cell():
     def representation(self, show_path: bool = False, neigh_path: dict = None, neigh_42: dict = None):
         if neigh_path is None:
             neigh_path = {"N": False, "E": False, "S": False, "W": False}
-        
+
         if neigh_42 is None:
             neigh_42 = {"N": False, "E": False, "S": False, "W": False}
-        
+
         blue_square = "\033[34m██\033[0m"
         white_corridor = "\033[47m  \033[0m"
 
@@ -168,7 +169,6 @@ class Maze():
                     # blue path
                     def is_p(c): 
                         return c.path or "\033[32m" in c.special or "\033[31m" in c.special
-                    
                     neighs_path = {
                         "N": (y > 0 and is_p(self.grid[y-1][x]) and is_p(cell)),
                         "S": (y < self.height-1 and is_p(self.grid[y+1][x]) and is_p(cell)),
@@ -342,25 +342,18 @@ class Maze():
         result = {}
         # checing from 4 sides
         if x - 1 >= 0:
-            # print(1, end="")
             nb = self.grid[y][x - 1]
-            # if nb.special not in (" S", " E", "42", " P"):
             if nb.special == "  " or nb.special == " P":
-            # or nb.special == " P":
-                # if nb.e is True:
                 result.update({"W": nb})
         if x + 1 < self.width:
-            # print(2, end="")
             nb = self.grid[y][x + 1]
             if nb.special == "  " or nb.special == " P":
                 result.update({"E": nb})
         if y - 1 >= 0:
-            # print(3, end="")
             nb = self.grid[y - 1][x]
             if nb.special == "  " or nb.special == " P":
                 result.update({"N": nb})
         if y + 1 < self.height:
-            # print(4, end="")
             nb = self.grid[y + 1][x]
             if nb.special == "  " or nb.special == " P":
                 result.update({"S": nb})
@@ -438,6 +431,7 @@ class Maze():
         # self.stage3()
         if self.perfect is False:
             self.dead_end_open()
+            self.bfs()
         # all cells.path = False
         # starting from the start. checking parents
         # if there are two options to go, create a new stack of cells
@@ -445,15 +439,103 @@ class Maze():
         # write_into_file(
         #     self.grid, self.output_file, self.entry, self.exit. self.path)
 
+    # BFS
+    # def pathfind(self):
+    #     def get_neighbours(cell: Cell) -> list:
+    #         x, y = cell.position
+    #         result = []
+    #         # checing from 4 sides
+    #         if x - 1 >= 0:
+    #             # if self.grid[y][x - 1].visited is True:
+    #             if self.grid[y][x - 1].e is False:
+    #                 result.append(self.grid[y][x - 1])
+    #         if x + 1 < self.width:
+    #             # if self.grid[y][x + 1].visited is True:
+    #             if self.grid[y][x + 1].w is False:
+    #                 result.append(self.grid[y][x + 1])
+    #         if y - 1 >= 0:
+    #             # if self.grid[y - 1][x].visited is True:
+    #             if self.grid[y - 1][x].s is False:
+    #                 result.append(self.grid[y - 1][x])
+    #         if y + 1 < self.height:
+    #             # if self.grid[y + 1][x].visited is True:
+    #             if self.grid[y + 1][x].n is False:
+    #                 result.append(self.grid[y + 1][x])
+    #         return result
 
-    def pathfind(self):
-        start = self.grid[self.entry[1]][self.exit[0]]
-        gstack = []
-        current = start
-        gstack.append(start)
+    #     current = None
+    #     visited = set()
+    #     neighbours = []
+    #     queue = deque()
+    #     # gstack = []
+    #     while self.grid[self.exit[1]][self.exit[0]] not in neighbours:
+    #         if not current:
+    #             current = start
+    #         neighbours = get_neighbours(current)
+    #         for cell in neighbours:
+    #             visited.add(cell)
+        
+        # gstack.append(start)
         # get neighbours with open walls
         # if there are more then one we need to start dig in more directions
         # how?
+
+    def bfs(self) -> None:
+        def get_neighbours(cell: Cell) -> list[Cell]:
+            x, y = cell.position
+            result = []
+            # checing from 4 sides
+            if x - 1 >= 0:
+                # if self.grid[y][x - 1].visited is True:
+                if self.grid[y][x - 1].e is False:
+                    result.append(self.grid[y][x - 1])
+            if x + 1 < self.width:
+                # if self.grid[y][x + 1].visited is True:
+                if self.grid[y][x + 1].w is False:
+                    result.append(self.grid[y][x + 1])
+            if y - 1 >= 0:
+                # if self.grid[y - 1][x].visited is True:
+                if self.grid[y - 1][x].s is False:
+                    result.append(self.grid[y - 1][x])
+            if y + 1 < self.height:
+                # if self.grid[y + 1][x].visited is True:
+                if self.grid[y + 1][x].n is False:
+                    result.append(self.grid[y + 1][x])
+            return result
+        start: Cell = self.grid[self.entry[1]][self.entry[0]]
+        path = [start]
+        queue = deque([(start, path)])
+        visited = set()
+        visited.add(start)
+
+        while queue:
+            # print("q")
+            current, path = queue.popleft()
+            # print(current.special)
+            if current.position == self.exit:
+                # return path
+                break
+            nbs = get_neighbours(current)
+            for n in nbs:
+                if n not in visited:
+                    visited.add(n)
+                    queue.append((n, path + [n]))
+        for r in self.grid:
+            for cell in r:
+                cell.path = False
+        for cell in path:
+            x, y = cell.position
+            self.grid[y][x].path = True
+            if self.grid[y][x].special not in [" S", " E", "42"]:
+                self.grid[y][x].special = " P"
+            # cell.path = True
+        
+            # for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+            #     nx, ny = x+dx, y+dy
+
+            #     if (nx, ny) not in visited and maze[nx][ny] == 1:
+            #         visited.add((nx, ny))
+            #         queue.append(((nx, ny), path + [(nx, ny)]))
 
     @staticmethod
     def distance(point_a: tuple[int, int], point_b: tuple[int, int]) -> float:
