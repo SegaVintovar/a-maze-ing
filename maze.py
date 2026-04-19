@@ -1,5 +1,5 @@
 import random
-from time import sleep
+import time
 from functools import wraps
 from typing import Callable
 import math
@@ -140,6 +140,7 @@ class Maze():
         self.grid: list[list[Cell]] = []
         random.seed(seed)
         self.stack: list[Cell] = []
+        self.path_cells: list[Cell] = []
 
     def create_grid(self):
         x1, y1 = self.entry
@@ -491,3 +492,72 @@ class Maze():
                 next_cell.path = True
         # if len(self.stack) > 0:
         #     last = self.stack[-1]
+
+    # DFS algo
+    def find_shortest_path(self) -> None:
+        for row in self.grid:
+            for cell in row:
+                cell.path = False
+        
+        start_x, start_y = self.entry
+        end_x, end_y = self.exit
+        start = self.grid[start_y][start_x]
+        end = self.grid[end_y][end_x]
+
+        queue = [start]
+        came_from = {start: None}
+
+        while len(queue) > 0:
+            current = queue.pop(0)
+        
+            if current == end:
+                break
+
+            x, y = current.position
+            
+            if not current.n and y - 1 >= 0:
+                neighbour = self.grid[y - 1][x]
+                if neighbour not in came_from:
+                    came_from[neighbour] = current
+                    queue.append(neighbour)
+            
+            if not current.e and x + 1 < self.width:
+                neighbour = self.grid[y][x + 1]
+                if neighbour not in came_from:
+                    came_from[neighbour] = current
+                    queue.append(neighbour)
+            
+            if not current.s and y + 1 < self.height:
+                neighbour = self.grid[y + 1][x]
+                if neighbour not in came_from:
+                    came_from[neighbour] = current
+                    queue.append(neighbour)
+            
+            if not current.w and x - 1 >= 0:
+                neighbour = self.grid[y][x - 1]
+                if neighbour not in came_from:
+                    came_from[neighbour] = current
+                    queue.append(neighbour)
+
+        self.path_cells = []
+        current = end
+        while current is not None:
+            current.path = True
+            self.path_cells.append(current)
+            current = came_from.get(current)
+        
+        self.path_cells.reverse()
+
+    def animate_path(self, color: str = "\033[0m") -> None:
+        for cell in self.path_cells:
+            cell.path = False
+
+        print("\033[H\033[J", end="")
+        self.print_grid(True, color)
+        time.sleep(0.3)
+
+        for cell in self.path_cells:
+            cell.path = True
+            print("\033[H\033[J", end="")
+            self.print_grid(True, color)
+            time.sleep(0.05)

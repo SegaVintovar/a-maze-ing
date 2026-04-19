@@ -2,6 +2,7 @@ import sys
 from maze import Maze, Cell
 from parsing import parsing
 from os import system
+import time
 
 # Bit Direction
 # 0 (LSB) North
@@ -135,10 +136,11 @@ def run_menu(my_maze: Maze) -> None:
         print("\n=== A-Maze-ing ===")
         print("1. Regenerate maze")
         print("2. Show/Hide path")
-        print("3. Rotate colors")
-        print("4. Quit")
+        print("3. Animate path")
+        print("4. Rotate colors")
+        print("5. Quit")
 
-        choice = input("Choice? (1-4): ")
+        choice = input("Choice? (1-5): ")
         if choice == "1":
             my_maze.grid = []
             my_maze.stack = []
@@ -146,6 +148,7 @@ def run_menu(my_maze: Maze) -> None:
             my_maze.create_grid()
             my_maze.insert_forty2(my_maze.ft())
             my_maze.path_gen()
+            my_maze.find_shortest_path()
 
             for row in my_maze.grid:
                 for cell in row:
@@ -155,8 +158,11 @@ def run_menu(my_maze: Maze) -> None:
         elif choice == "2":
             show_path = not show_path
         elif choice == "3":
+            my_maze.animate_path(colors[color_index])
+            show_path = True
+        elif choice == "4":
             color_index = (color_index + 1) % len(colors)
-        elif choice == "4" or choice == "q":
+        elif choice == "5" or choice == "q":
             break
 
 
@@ -168,6 +174,7 @@ def print_grid_of_path(maze: list[list[Cell]]):
             else:
                 print("0", end="")
         print()
+
 
 def main() -> None:
     if len(sys.argv) == 2:
@@ -189,6 +196,7 @@ def main() -> None:
             my_maze.create_grid()
             my_maze.insert_forty2(my_maze.ft())
             my_maze.path_gen()
+            my_maze.find_shortest_path()
             # print_grid_of_path(my_maze.grid)
             # print_grid(my_maze.grid)
             write_into_file(my_maze)
