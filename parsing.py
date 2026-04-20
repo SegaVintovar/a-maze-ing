@@ -1,3 +1,10 @@
+"""
+Configuration parsing and validation for A-Maze-ing.
+
+Parses a plain-text config file into a dict of maze parameters and
+validates types, ranges, and file-name patterns via a Pydantic model.
+"""
+
 from pydantic import BaseModel, model_validator, Field
 # import sys
 # import os
@@ -7,11 +14,22 @@ from pydantic import BaseModel, model_validator, Field
 
 
 class ParsingError(Exception):
+    """Raised when a config file line cannot be parsed or has an unknown key."""
     def __init__(self, message: str) -> None:
         self.message = message
 
 
 def parsing(data: str) -> dict:
+    """
+    Parse the raw text of a config file into a dict of maze parameters.
+
+    Each non-empty, non-comment line must have the form KEY=VALUE.
+    Recognised keys: WIDTH, HEIGHT, ENTRY, EXIT, OUTPUT_FILE, PERFECT, SEED.
+    Keys are lowercased in the returned dict so they map directly onto the
+    Maze / InputCheck constructors.
+
+    ParsingError: If a line is malformed or contains an unknown key.
+    """
     rows = data.split("\n")
     result = {"seed": None}
     for row in rows:
@@ -52,6 +70,15 @@ def parsing(data: str) -> dict:
 
 
 class InputCheck(BaseModel):
+    """
+    Pydantic schema that validates parsed config values.
+
+    Ensures width/height are positive, the output file ends in '.txt',
+    and seed, if given, is non-negative. Entry and exit ranges relative
+    to the grid are not yet validated here.
+    """
+    # we do not run the amazing if the terminal width is not big enough
+    # cell is represented as 6 colomns
     width: int
     height: int
     entry: tuple[int, int]

@@ -1,9 +1,22 @@
+"""
+A-Maze-ing entry point: CLI, file output, and interactive menu glue.
+
+This module wires the parser, the Maze generator, and the terminal UI
+together. It also handles encoding the maze into the hex-per-cell
+format written to the output file.
+"""
+
 import sys
 from maze_gen import Maze, Cell
 from maze_gen import parsing, InputCheck, ParsingError
 # from os import system
 import random
 # from .parsing import InputCheck, ParsingError
+from maze import Maze, Cell
+from parsing import parsing
+from os import system
+import time
+
 # Bit Direction
 # 0 (LSB) North
 # 1 East
@@ -12,6 +25,14 @@ import random
 
 
 def decode(cell: Cell) -> str:
+    """
+    Encode a cell's walls into a 4-bit binary string.
+
+    Bit order (MSB -> LSB): West, South, East, North.
+    Each bit is 1 if that wall is closed, 0 if open.
+    The result is a 4-char string like '1011', later converted to hex
+    and written to the maze output file.
+    """
     result = ""
     north = int(cell.n)
     east = int(cell.e)
@@ -24,6 +45,17 @@ def decode(cell: Cell) -> str:
 
 
 def get_right_dir(cell: Cell, maze: Maze) -> tuple[str, Cell] | None:
+    """
+    Return the next step of the path from `cell`, or None if there is none.
+
+    Inspects the four neighbours of `cell` and picks one that:
+      - is on the shortest path (`path is True`),
+      - is not the parent we came from,
+      - is connected to `cell` through an open wall.
+
+    Returns a ("N"|"E"|"S"|"W", Cell) tuple, or None when no such
+    neighbour exists (e.g. at the exit).
+    """
     x, y = cell.position
     # result = ()
     # checing from 4 sides
@@ -53,6 +85,14 @@ def get_right_dir(cell: Cell, maze: Maze) -> tuple[str, Cell] | None:
 
 
 def get_directions(maze: Maze) -> str:
+    """
+    Walk the shortest path from entry to exit and return the moves.
+
+    Starting at the entry cell, repeatedly asks get_right_dir for the
+    next step, concatenating one letter per move ('N', 'E', 'S', 'W').
+    Stops when the exit cell is reached. The result is the string
+    appended to the output file as the solution trail.
+    """
     current = maze.grid[maze.entry[1]][maze.entry[0]]
     result = ""
     next_cell: Cell = None
@@ -80,6 +120,17 @@ def get_directions(maze: Maze) -> str:
 
 
 def write_into_file(maze: Maze) -> None:
+    """
+    Serialise the maze to the configured output file.
+
+    Layout:
+        - grid: one line per row, each cell encoded as a single hex
+          digit whose 4 bits describe the wall state (see decode).
+        - blank line.
+        - entry coordinates as "x, y".
+        - exit coordinates as "x, y".
+        - solution string from get_directions (e.g. "EENNSS").
+    """
     result = ""
     for row in maze.grid:
         for cell in row:
@@ -104,6 +155,13 @@ def write_into_file(maze: Maze) -> None:
 
 
 def run_menu(my_maze: Maze, message: str) -> None:
+    """
+    Launch the interactive terminal menu for the maze
+
+    Presents a looping menu with options to regenerate the maze, toggle
+    shortest-path display, animate the path, cycle through wall colors,
+    and quit. Redraws the maze after each action to reflect changes
+    """
     show_path = False
     # black, red, green, purple, cyan, dark gray, bright cyan
     colors = [
@@ -138,10 +196,11 @@ def run_menu(my_maze: Maze, message: str) -> None:
         print("\n=== A-Maze-ing ===")
         print("1. Regenerate maze")
         print("2. Show/Hide path")
-        print("3. Rotate colors")
-        print("4. Quit")
+        print("3. Animate path")
+        print("4. Rotate colors")
+        print("5. Quit")
 
-        choice = input("Choice? (1-4): ")
+        choice = input("Choice? (1-5): ")
         if choice == "1":
             my_maze.grid = []
             my_maze.stack = []
@@ -150,6 +209,7 @@ def run_menu(my_maze: Maze, message: str) -> None:
             if my_maze.height > 6 and my_maze.width > 8:
                 my_maze.insert_forty2(my_maze.ft())
             my_maze.path_gen()
+            my_maze.find_shortest_path()
 
             for row in my_maze.grid:
                 for cell in row:
@@ -159,8 +219,11 @@ def run_menu(my_maze: Maze, message: str) -> None:
         elif choice == "2":
             show_path = not show_path
         elif choice == "3":
+            my_maze.animate_path(colors[color_index])
+            show_path = True
+        elif choice == "4":
             color_index = (color_index + 1) % len(colors)
-        elif choice == "4" or choice == "q":
+        elif choice == "5" or choice == "q":
             break
 
 
@@ -175,6 +238,16 @@ def print_grid_of_path(maze: list[list[Cell]]):
 
 
 def main() -> None:
+    """
+    Program entry point: parse arguments, generate maze, launch menu
+
+    Expects exactly one command-line argument — the path to a
+    configuration file. If the argument is missing or invalid, prints
+    an error message and exits. Otherwise, parses the config, builds
+    the maze through the full pipeline (create, embed '42', generate
+    passages, compute path), writes it to the output file, and starts
+    the interactive menu
+    """
     message = ""
     if len(sys.argv) == 2:
         # it can be any file
@@ -202,6 +275,7 @@ def main() -> None:
             else:
                 message = "Due to the size, 42 logo was omitted"
             my_maze.path_gen()
+            my_maze.find_shortest_path()
             # print_grid_of_path(my_maze.grid)
             # print_grid(my_maze.grid)
             write_into_file(my_maze)
