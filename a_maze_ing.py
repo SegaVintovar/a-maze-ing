@@ -7,6 +7,11 @@ format written to the output file.
 """
 
 import sys
+from maze_gen import Maze, Cell
+from maze_gen import parsing, InputCheck, ParsingError
+# from os import system
+import random
+# from .parsing import InputCheck, ParsingError
 from maze import Maze, Cell
 from parsing import parsing
 from os import system
@@ -17,6 +22,7 @@ import time
 # 1 East
 # 2 South
 # 3 West
+
 
 def decode(cell: Cell) -> str:
     """
@@ -148,7 +154,7 @@ def write_into_file(maze: Maze) -> None:
         raise Exception
 
 
-def run_menu(my_maze: Maze) -> None:
+def run_menu(my_maze: Maze, message: str) -> None:
     """
     Launch the interactive terminal menu for the maze
 
@@ -157,15 +163,15 @@ def run_menu(my_maze: Maze) -> None:
     and quit. Redraws the maze after each action to reflect changes
     """
     show_path = False
-
+    # black, red, green, purple, cyan, dark gray, bright cyan
     colors = [
-        "\033[30m", # black
-        "\033[31m", # red
-        "\033[32m", # green
-        "\033[0;35m", # purple
-        "\033[36m", # cyan
-        "\033[90m", # dark gray
-        "\033[96m"  # bright cyan
+        "\033[30m"
+        "\033[31m",
+        "\033[32m",
+        "\033[0;35m",
+        "\033[36m",
+        "\033[90m",
+        "\033[96m"
         ]
     color_index = 0
 
@@ -178,9 +184,10 @@ def run_menu(my_maze: Maze) -> None:
     while True:
         """Escape sequence to clean terminal screen"""
         print("\033[H\033[J", end="")
-
-        x,y = my_maze.entry
-        x1,y1 = my_maze.exit
+        if message != "":
+            print(message)
+        x, y = my_maze.entry
+        x1, y1 = my_maze.exit
         my_maze.grid[y][x].path = True
         my_maze.grid[y1][x1].path = True
 
@@ -197,9 +204,10 @@ def run_menu(my_maze: Maze) -> None:
         if choice == "1":
             my_maze.grid = []
             my_maze.stack = []
-
+            random.seed(my_maze.seed)
             my_maze.create_grid()
-            my_maze.insert_forty2(my_maze.ft())
+            if my_maze.height > 6 and my_maze.width > 8:
+                my_maze.insert_forty2(my_maze.ft())
             my_maze.path_gen()
             my_maze.find_shortest_path()
 
@@ -207,7 +215,7 @@ def run_menu(my_maze: Maze) -> None:
                 for cell in row:
                     if cell.special == "42":
                         cell.special = yellow_square
-            
+
         elif choice == "2":
             show_path = not show_path
         elif choice == "3":
@@ -240,37 +248,45 @@ def main() -> None:
     passages, compute path), writes it to the output file, and starts
     the interactive menu
     """
+    message = ""
     if len(sys.argv) == 2:
-        # it can be any file, maybe that ends up on .txt
-        if sys.argv[1] == "config.txt":
+        # it can be any file
+        try:
+            # if sys.argv[1] == r"^.+\.txt$":
             with open(sys.argv[1], "r") as config_file:
                 config_data = config_file.read()
             # try:
                 data_4_maze = parsing(config_data)
-                # print(data_4_maze)
-            # except Exception as e:
-            #     print("Parsing error: ", str(e))
-            #     return
+                validated = InputCheck(**data_4_maze)
             # else:
-        else:
-            raise Exception("We are expecting config.txt as an argument")
+            #     raise ParsingError(
+            #         "We are expecting .txt file for maze configuration")
+        except ParsingError as p:
+            print(str(p))
+            exit(1)
+        except Exception as e:
+            print("Parsing error: ", str(e.errors()[0]['msg']))
+            exit(1)
         try:
-            my_maze = Maze(**data_4_maze)
+            my_maze = Maze(**validated.model_dump())
             my_maze.create_grid()
-            my_maze.insert_forty2(my_maze.ft())
+            if my_maze.width > 8 and my_maze.height > 6:
+                my_maze.insert_forty2(my_maze.ft())
+            else:
+                message = "Due to the size, 42 logo was omitted"
             my_maze.path_gen()
             my_maze.find_shortest_path()
             # print_grid_of_path(my_maze.grid)
             # print_grid(my_maze.grid)
             write_into_file(my_maze)
             # my_maze.print_grid()
-            run_menu(my_maze)
+            run_menu(my_maze, message)
 
         except Exception as e:
             print(str(e))
             exit(1)
     else:
-        print("The Amazing reqiuers 'config.txt' as a given parameter")
+        print("The Amazing reqiuers '<config_file>.txt' as a given parameter")
 
 
 if __name__ == "__main__":

@@ -31,7 +31,7 @@ def parsing(data: str) -> dict:
     ParsingError: If a line is malformed or contains an unknown key.
     """
     rows = data.split("\n")
-    result = {}
+    result = {"seed": None}
     for row in rows:
         if row.startswith("#") or row == "":
             continue
@@ -39,8 +39,8 @@ def parsing(data: str) -> dict:
             entry = row.split("=")
             if len(entry) == 2:
                 if (
-                    entry[0] == "WIDTH" or
-                    entry[0] == "HEIGHT"
+                        entry[0] == "WIDTH" or
+                        entry[0] == "HEIGHT"
                         ):
                     result.update({entry[0].lower(): int(entry[1])})
                 elif (
@@ -60,14 +60,12 @@ def parsing(data: str) -> dict:
                     elif entry[1] == "False":
                         result.update({entry[0].lower(): False})
                 elif entry[0] == "SEED":
-                    result.update({entry[0].lower(): entry[1]})
+                    result.update({entry[0].lower(): int(entry[1])})
                 else:
                     raise ParsingError(f"Unknown parameter: {row}")
             else:
                 raise ParsingError(f"ParsingError: {row} entry is invalid")
 
-    # check if we have all the parameters and they are correct
-    # validation
     return result
 
 
@@ -81,8 +79,8 @@ class InputCheck(BaseModel):
     """
     # we do not run the amazing if the terminal width is not big enough
     # cell is represented as 6 colomns
-    width: int = Field(gt=0)
-    height: int = Field(gt=0)
+    width: int
+    height: int
     entry: tuple[int, int]
     exit: tuple[int, int]
     # r is raw string, because regex uses a lot of backslashes
@@ -95,8 +93,28 @@ class InputCheck(BaseModel):
     seed: int | None = Field(ge=0)
 
     # i can check if the entry and exit are in the grid
-    # @model_validator
-    # def validator(self):
-    #     if self.width * 6 < terminal_width:
-    #         raise ValueError
-    #     return self
+    @model_validator(mode="after")
+    def validator(self) -> BaseModel:
+        if self.entry == self.exit:
+            raise ValueError("Entry and Exit has to be different")
+        if self.width < 1 or self.height < 1:
+            raise ValueError("Size parameters have to be greater then ZERO")
+        if (self.entry[0] < 0 or
+                self.entry[1] < 0 or
+                self.exit[0] < 0 or
+                self.exit[1] < 0):
+            raise ValueError(
+                "Entry/Exit coordinates have to be positive integers"
+                )
+        # check start and entry
+        if (self.entry[0] >= self.width or self.entry[1] >= self.height or
+                self.entry[0] < 0 or self.entry[1] < 0):
+            raise ValueError("Entry point is out of Maze bounds")
+        if (self.exit[0] >= self.width or self.exit[1] >= self.height or
+                self.entry[0] < 0 or self.entry[1] < 0):
+            raise ValueError("Exit point is out of Maze bounds")
+        # if self.width < 9 or self.height < 7:
+        #     raise ValueError("Maze size is too small to",
+        #                      "create a labirynth with '42' logo."
+        #                      "\nMin size is 9 x 7")
+        return self

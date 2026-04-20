@@ -1,6 +1,6 @@
-from .maze import Cell, Maze
-from .parsing import parsing, ParsingError
+from ..maze import Cell, Maze
+from ..parsing import parsing, ParsingError, InputCheck
 
-all = [Cell, Maze, parsing, ParsingError]
+all = [Cell, Maze, parsing, ParsingError, InputCheck]
 
-__author__ = "Valentyn"
+__author__ = "Valentyn/Oleksandr"

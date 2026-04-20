@@ -9,6 +9,12 @@ shortest-path computation
 """
 
 import random
+# from time import sleep
+# from functools import wraps
+# from typing import Callable
+import math
+from collections import deque
+# from .a_maze_ing import write_into_file
 import time
 from functools import wraps
 from typing import Callable
@@ -20,6 +26,17 @@ OPPOSSITE_DIR = {
     "E": "W",
     "W": "E"
 }
+
+
+# def time_slower(seconds: int | float):
+#     def decorator(func: Callable):
+#         @wraps(func)
+#         def wrapper(*args, **kwargs):
+#             sleep(seconds)
+#             result = func(*args, **kwargs)
+#             return result
+#         return wrapper
+#     return decorator
 
 
 class Cell():
@@ -70,7 +87,13 @@ class Cell():
         self.parent: Cell | None = None
         self.dead: bool = False
 
-    def wall(self, wall: bool, side: str, is_path: bool = False, is_42: bool = False) -> str:
+    def wall(
+            self,
+            wall: bool,
+            side: str,
+            is_path: bool = False,
+            is_42: bool = False
+            ) -> str:
         """
         Return the colored 2-char string for one wall or corridor segment.
 
@@ -78,14 +101,19 @@ class Cell():
         square when the cell is on the path and the wall is open, white
         corridor '  ' otherwise.
         """
-
+        # if not wall:
+        #     return "  "
+        # if side == "N" or side == "S":
+        #     return "██"
+        # if side == "E" or side == "W":
+        #     return "██"
         blue_square = "\033[34m██\033[0m"
         white_corridor = "\033[47m  \033[0m"
         yellow_square = "\033[33m██\033[0m"
 
         if is_42:
             return yellow_square
-        
+
         if not wall:
             if is_path:
                 return blue_square
@@ -94,7 +122,10 @@ class Cell():
             return white_corridor
         return "██"
 
-    def representation(self, show_path: bool = False, neigh_path: dict = None, neigh_42: dict = None):
+    # @time_slower(0.001)
+    def representation(
+            self, show_path: bool = False, neigh_path: dict = None,
+            neigh_42: dict = None):
         """Return the 3x3 string matrix representing the cell for printing.
 
         The cell is rendered as a 3-row by 3-column grid of strings. Corners
@@ -109,10 +140,10 @@ class Cell():
         """
         if neigh_path is None:
             neigh_path = {"N": False, "E": False, "S": False, "W": False}
-        
+
         if neigh_42 is None:
             neigh_42 = {"N": False, "E": False, "S": False, "W": False}
-        
+
         blue_square = "\033[34m██\033[0m"
         white_corridor = "\033[47m  \033[0m"
 
@@ -130,10 +161,22 @@ class Cell():
         w_char = "██"
 
         return [
-            [w_char, self.wall(self.n, "N", show_path and neigh_path["N"], neigh_42["N"]), w_char],
-            [self.wall(self.w, "W", show_path and neigh_path["W"], neigh_42["W"]), center, 
-             self.wall(self.e, "E", show_path and neigh_path["E"], neigh_42["E"])],
-            [w_char, self.wall(self.s, "S", show_path and neigh_path["S"], neigh_42["S"]), w_char]
+            [
+                w_char,
+                self.wall(self.n, "N", show_path and neigh_path["N"],
+                          neigh_42["N"]), w_char
+            ],
+            [
+                self.wall(
+                    self.w, "W", show_path and neigh_path["W"], neigh_42["W"]),
+                center,
+                self.wall(
+                    self.e, "E", show_path and neigh_path["E"], neigh_42["E"])
+            ],
+            [
+                w_char, self.wall(self.s, "S", show_path and neigh_path["S"],
+                                  neigh_42["S"]), w_char
+            ]
         ]
 
     def open_wall(self, wall: str) -> None:
@@ -238,7 +281,8 @@ class Maze():
             self.grid.append(row)
             i += 1
 
-    def print_grid(self, show_path: bool = False, color: str = "\033[0m") -> None:
+    def print_grid(
+            self, show_path: bool = False, color: str = "\033[0m") -> None:
         """Print the maze to the terminal as an ASCII rendering.
 
         Each cell is rendered as a 3x3 block of characters. Walls are shown
@@ -255,15 +299,21 @@ class Maze():
             i = 0
             while i < 3:
                 for x, cell in enumerate(row):
+
                     # blue path
-                    def is_p(c): 
-                        return c.path or "\033[32m" in c.special or "\033[31m" in c.special
-                    
+                    def is_p(c):
+                        return (c.path or "\033[32m" in c.special
+                                or "\033[31m" in c.special)
+
                     neighs_path = {
-                        "N": (y > 0 and is_p(self.grid[y-1][x]) and is_p(cell)),
-                        "S": (y < self.height-1 and is_p(self.grid[y+1][x]) and is_p(cell)),
-                        "E": (x < self.width-1 and is_p(self.grid[y][x+1]) and is_p(cell)),
-                        "W": (x > 0 and is_p(self.grid[y][x-1]) and is_p(cell))
+                        "N": (y > 0 and is_p(self.grid[y-1][x])
+                              and is_p(cell)),
+                        "S": (y < self.height-1 and is_p(self.grid[y+1][x])
+                              and is_p(cell)),
+                        "E": (x < self.width-1 and is_p(self.grid[y][x+1])
+                              and is_p(cell)),
+                        "W": (x > 0 and is_p(self.grid[y][x-1])
+                              and is_p(cell))
                     }
 
                     # 42 logic
@@ -271,14 +321,22 @@ class Maze():
                         return "\033[33m" in c.special
 
                     neighs_42 = {
-                        "N": (y > 0 and is_42(self.grid[y-1][x]) and is_42(cell)),
-                        "S": (y < self.height-1 and is_42(self.grid[y+1][x]) and is_42(cell)),
-                        "E": (x < self.width-1 and is_42(self.grid[y][x+1]) and is_42(cell)),
-                        "W": (x > 0 and is_42(self.grid[y][x-1]) and is_42(cell))
+                        "N": (y > 0 and is_42(self.grid[y-1][x])
+                              and is_42(cell)),
+                        "S": (y < self.height-1 and is_42(self.grid[y+1][x])
+                              and is_42(cell)),
+                        "E": (x < self.width-1 and is_42(self.grid[y][x+1])
+                              and is_42(cell)),
+                        "W": (x > 0 and is_42(self.grid[y][x-1])
+                              and is_42(cell))
                     }
-                    
-                    rep = cell.representation(show_path=show_path, neigh_path=neighs_path, neigh_42=neighs_42)
-                    
+
+                    rep = cell.representation(
+                        show_path=show_path,
+                        neigh_path=neighs_path,
+                        neigh_42=neighs_42
+                        )
+
                     k = 0
                     while k < 3:
                         part = rep[i][k]
@@ -462,27 +520,20 @@ class Maze():
         result = {}
         # checing from 4 sides
         if x - 1 >= 0:
-            print(1, end="")
             nb = self.grid[y][x - 1]
-            # if nb.special not in (" S", " E", "42", " P"):
-            if nb.special == "  ":
-            # or nb.special == " P":
-                # if nb.e is True:
+            if nb.special in [" P", "  ", " S", " F"]:
                 result.update({"W": nb})
         if x + 1 < self.width:
-            print(2, end="")
             nb = self.grid[y][x + 1]
-            if nb.special == "  ":
+            if nb.special == "  " or nb.special == " P":
                 result.update({"E": nb})
         if y - 1 >= 0:
-            print(3, end="")
             nb = self.grid[y - 1][x]
-            if nb.special == "  ":
+            if nb.special in [" P", "  ", " S", " F"]:
                 result.update({"N": nb})
         if y + 1 < self.height:
-            print(4, end="")
             nb = self.grid[y + 1][x]
-            if nb.special == "  ":
+            if nb.special == "  " or nb.special == " P":
                 result.update({"S": nb})
         return result
 
@@ -562,11 +613,115 @@ class Maze():
         self.stage1()
         self.build_the_path()
         self.stage2()
-        self.stage3()
+        # self.stage3()
         if self.perfect is False:
             self.dead_end_open()
+            self.bfs()
+        # all cells.path = False
+        # starting from the start. checking parents
+        # if there are two options to go, create a new stack of cells
+        #
         # write_into_file(
         #     self.grid, self.output_file, self.entry, self.exit. self.path)
+
+    # BFS
+    # def pathfind(self):
+    #     def get_neighbours(cell: Cell) -> list:
+    #         x, y = cell.position
+    #         result = []
+    #         # checing from 4 sides
+    #         if x - 1 >= 0:
+    #             # if self.grid[y][x - 1].visited is True:
+    #             if self.grid[y][x - 1].e is False:
+    #                 result.append(self.grid[y][x - 1])
+    #         if x + 1 < self.width:
+    #             # if self.grid[y][x + 1].visited is True:
+    #             if self.grid[y][x + 1].w is False:
+    #                 result.append(self.grid[y][x + 1])
+    #         if y - 1 >= 0:
+    #             # if self.grid[y - 1][x].visited is True:
+    #             if self.grid[y - 1][x].s is False:
+    #                 result.append(self.grid[y - 1][x])
+    #         if y + 1 < self.height:
+    #             # if self.grid[y + 1][x].visited is True:
+    #             if self.grid[y + 1][x].n is False:
+    #                 result.append(self.grid[y + 1][x])
+    #         return result
+
+    #     current = None
+    #     visited = set()
+    #     neighbours = []
+    #     queue = deque()
+    #     # gstack = []
+    #     while self.grid[self.exit[1]][self.exit[0]] not in neighbours:
+    #         if not current:
+    #             current = start
+    #         neighbours = get_neighbours(current)
+    #         for cell in neighbours:
+    #             visited.add(cell)
+
+        # gstack.append(start)
+        # get neighbours with open walls
+        # if there are more then one we need to start dig in more directions
+        # how?
+
+    def bfs(self) -> None:
+        def get_neighbours(cell: Cell) -> list[Cell]:
+            x, y = cell.position
+            result = []
+            # checing from 4 sides
+            if x - 1 >= 0:
+                # if self.grid[y][x - 1].visited is True:
+                if self.grid[y][x - 1].e is False:
+                    result.append(self.grid[y][x - 1])
+            if x + 1 < self.width:
+                # if self.grid[y][x + 1].visited is True:
+                if self.grid[y][x + 1].w is False:
+                    result.append(self.grid[y][x + 1])
+            if y - 1 >= 0:
+                # if self.grid[y - 1][x].visited is True:
+                if self.grid[y - 1][x].s is False:
+                    result.append(self.grid[y - 1][x])
+            if y + 1 < self.height:
+                # if self.grid[y + 1][x].visited is True:
+                if self.grid[y + 1][x].n is False:
+                    result.append(self.grid[y + 1][x])
+            return result
+
+        start: Cell = self.grid[self.entry[1]][self.entry[0]]
+        path = [start]
+        queue = deque([(start, path)])
+        visited = set()
+        visited.add(start)
+
+        while queue:
+            # print("q")
+            current, path = queue.popleft()
+            # print(current.special)
+            if current.position == self.exit:
+                # return path
+                break
+            nbs = get_neighbours(current)
+            for n in nbs:
+                if n not in visited:
+                    visited.add(n)
+                    queue.append((n, path + [n]))
+        for r in self.grid:
+            for cell in r:
+                cell.path = False
+        for cell in path:
+            x, y = cell.position
+            self.grid[y][x].path = True
+            if self.grid[y][x].special not in [" S", " E", "42"]:
+                self.grid[y][x].special = " P"
+            # cell.path = True
+
+            # for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+            #     nx, ny = x+dx, y+dy
+
+            #     if (nx, ny) not in visited and maze[nx][ny] == 1:
+            #         visited.add((nx, ny))
+            #         queue.append(((nx, ny), path + [(nx, ny)]))
 
     @staticmethod
     def distance(point_a: tuple[int, int], point_b: tuple[int, int]) -> float:
@@ -595,8 +750,6 @@ class Maze():
             a = cell.position
             b = next_stack_cell.position
             if abs(b[0] - a[0]) + abs(b[1] - a[1]) == 1:
-                # if cell.special != " S":
-                #     cell.path = True
                 if cell.position != self.entry:
                     cell.special = " P"
                 next_cell = None
