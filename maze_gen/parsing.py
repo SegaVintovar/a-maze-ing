@@ -14,7 +14,9 @@ from pydantic import BaseModel, model_validator, Field
 
 
 class ParsingError(Exception):
-    """Raised when a config file line cannot be parsed or has an unknown key."""
+    """
+    Raised when a config file line cannot be parsed or has an unknown key.
+    """
     def __init__(self, message: str) -> None:
         self.message = message
 
