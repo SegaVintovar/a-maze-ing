@@ -12,6 +12,7 @@ clean:
 	rm -rf __pycache__/
 	rm -rf .mypy_cache/
 	rm -rf virt_env/
+	rm -rf maze_gen/__pycache__/
 # https://earthly.dev/blog/python-makefile/
 
 lint:

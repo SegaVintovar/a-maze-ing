@@ -6,6 +6,7 @@ validates types, ranges, and file-name patterns via a Pydantic model.
 """
 
 from pydantic import BaseModel, model_validator, Field
+from typing import Optional, TypeAlias, Self
 # import sys
 # import os
 
@@ -21,7 +22,10 @@ class ParsingError(Exception):
         self.message = message
 
 
-def parsing(data: str) -> dict:
+ConfigValue: TypeAlias = Optional[int | bool | str | tuple[int, int]]
+
+
+def parsing(data: str) -> dict[str, ConfigValue]:
     """
     Parse the raw text of a config file into a dict of maze parameters.
 
@@ -33,7 +37,7 @@ def parsing(data: str) -> dict:
     ParsingError: If a line is malformed or contains an unknown key.
     """
     rows = data.split("\n")
-    result = {"seed": None}
+    result: dict[str, ConfigValue] = {"seed": None}
     for row in rows:
         if row.startswith("#") or row == "":
             continue
@@ -79,8 +83,6 @@ class InputCheck(BaseModel):
     and seed, if given, is non-negative. Entry and exit ranges relative
     to the grid are not yet validated here.
     """
-    # we do not run the amazing if the terminal width is not big enough
-    # cell is represented as 6 colomns
     width: int
     height: int
     entry: tuple[int, int]
@@ -92,11 +94,11 @@ class InputCheck(BaseModel):
     # \. is literal
     output_file: str = Field(min_length=5, pattern=r"^.+\.txt$")
     perfect: bool
-    seed: int | None = Field(ge=0)
+    seed: Optional[int] = Field(default=None, ge=0)
 
     # i can check if the entry and exit are in the grid
     @model_validator(mode="after")
-    def validator(self) -> BaseModel:
+    def validator(self) -> Self:
         if self.entry == self.exit:
             raise ValueError("Entry and Exit has to be different")
         if self.width < 1 or self.height < 1:

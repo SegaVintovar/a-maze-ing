@@ -9,17 +9,7 @@ format written to the output file.
 import sys
 from maze_gen import Maze, parsing, InputCheck, ParsingError, write_into_file
 import random
-
-# from os import system
-
-# Bit Direction
-# 0 (LSB) North
-# 1 East
-# 2 South
-# 3 West
-
-
-
+from pydantic import ValidationError
 
 
 def run_menu(my_maze: Maze, message: str) -> None:
@@ -33,7 +23,7 @@ def run_menu(my_maze: Maze, message: str) -> None:
     show_path = False
     # black, red, green, purple, cyan, dark gray, bright cyan
     colors = [
-        "\033[30m"
+        "\033[30m",
         "\033[31m",
         "\033[32m",
         "\033[0;35m",
@@ -115,15 +105,18 @@ def main() -> None:
                 config_data = config_file.read()
             # try:
                 data_4_maze = parsing(config_data)
-                validated = InputCheck(**data_4_maze)
+                validated = InputCheck.model_validate(data_4_maze)
             # else:
             #     raise ParsingError(
             #         "We are expecting .txt file for maze configuration")
         except ParsingError as p:
             print(str(p))
             exit(1)
+        except ValidationError as v:
+            print("Parsing error: ", str(v.errors()[0]['msg']))
+            exit(1)
         except Exception as e:
-            print("Parsing error: ", str(e.errors()[0]['msg']))
+            print("Parsing error: ", str(e))
             exit(1)
         try:
             my_maze = Maze(**validated.model_dump())
