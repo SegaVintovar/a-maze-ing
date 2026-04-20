@@ -1,6 +1,11 @@
 from .maze import Maze, Cell
 
 
+# Bit Direction
+# 0 (LSB) North
+# 1 East
+# 2 South
+# 3 West
 def decode(cell: Cell) -> str:
     """
     Encode a cell's walls into a 4-bit binary string.
@@ -15,9 +20,7 @@ def decode(cell: Cell) -> str:
     east = int(cell.e)
     south = int(cell.s)
     west = int(cell.w)
-    # print(west)
     result = str(west) + str(south) + str(east) + str(north)
-    # print(result)
     return result
 
 
@@ -57,8 +60,6 @@ def get_right_dir(cell: Cell, maze: Maze) -> tuple[str, Cell] | None:
             if maze.grid[y + 1][x].n is False and cell.s is False:
                 return ("S", maze.grid[y + 1][x])
     return None
-    # print(result, cell.position)
-    # return result
 
 
 def get_directions(maze: Maze) -> str:
@@ -72,25 +73,14 @@ def get_directions(maze: Maze) -> str:
     """
     current = maze.grid[maze.entry[1]][maze.entry[0]]
     result = ""
-    next_cell: Cell = None
-    # print("get dir")
+    # next_cell: Optional[Cell] = None
     while True:
         right_dir = get_right_dir(current, maze)
         if right_dir:
             dir, next_cell = right_dir
-            # print(dir, next_cell.position)
-        # print(right_dir)
-        # print(right_dir)
-        # for d, cell in right_dir.items():
-        #     dir = d
-        #     next_cell = cell
-        # dir = right_dir.keys()
-        # print(dir)
-        # dir, next_cell = get_right_dir(current, maze).items()
         result += dir
         next_cell.parent = current
         current = next_cell
-        # print(result)
         if next_cell.special == " E":
             break
     return result
@@ -121,7 +111,6 @@ def write_into_file(maze: Maze) -> None:
     entry = str(maze.entry).removeprefix("(")
     result += entry.removesuffix(")") + "\n"
     finish = str(maze.exit).removeprefix("(")
-    # print(finish)
     result += finish.removesuffix(")") + "\n"
     result += get_directions(maze)
     try:
@@ -129,4 +118,3 @@ def write_into_file(maze: Maze) -> None:
             f.write(result)
     except Exception:
         raise Exception
-    

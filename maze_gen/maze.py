@@ -14,18 +14,8 @@ import random
 # from typing import Callable
 import math
 from collections import deque
-# from .a_maze_ing import write_into_file
 import time
-from functools import wraps
-from typing import Callable
-import math
-
-OPPOSSITE_DIR = {
-    "N": "S",
-    "S": "N",
-    "E": "W",
-    "W": "E"
-}
+from typing import Optional
 
 
 # def time_slower(seconds: int | float):
@@ -90,7 +80,7 @@ class Cell():
     def wall(
             self,
             wall: bool,
-            side: str,
+            # side: str,
             is_path: bool = False,
             is_42: bool = False
             ) -> str:
@@ -124,8 +114,8 @@ class Cell():
 
     # @time_slower(0.001)
     def representation(
-            self, show_path: bool = False, neigh_path: dict = None,
-            neigh_42: dict = None):
+            self, show_path: bool = False, neigh_path: Optional[dict] = None,
+            neigh_42: Optional[dict] = None) -> list:
         """Return the 3x3 string matrix representing the cell for printing.
 
         The cell is rendered as a 3-row by 3-column grid of strings. Corners
@@ -163,23 +153,23 @@ class Cell():
         return [
             [
                 w_char,
-                self.wall(self.n, "N", show_path and neigh_path["N"],
+                self.wall(self.n, show_path and neigh_path["N"],
                           neigh_42["N"]), w_char
             ],
             [
                 self.wall(
-                    self.w, "W", show_path and neigh_path["W"], neigh_42["W"]),
+                    self.w, show_path and neigh_path["W"], neigh_42["W"]),
                 center,
                 self.wall(
-                    self.e, "E", show_path and neigh_path["E"], neigh_42["E"])
+                    self.e, show_path and neigh_path["E"], neigh_42["E"])
             ],
             [
-                w_char, self.wall(self.s, "S", show_path and neigh_path["S"],
+                w_char, self.wall(self.s, show_path and neigh_path["S"],
                                   neigh_42["S"]), w_char
             ]
         ]
 
-    def open_wall(self, wall: str) -> None:
+    def open_wall(self, wall: Optional[str]) -> None:
         """
         Set a specific wall to the open state.
         """
@@ -255,7 +245,7 @@ class Maze():
         self.stack: list[Cell] = []
         self.path_cells: list[Cell] = []
 
-    def create_grid(self):
+    def create_grid(self) -> None:
         """Build the initial grid of cells with all walls closed.
 
         Creates a height-by-width 2D grid of Cell objects. All walls are
@@ -271,11 +261,11 @@ class Maze():
             row = []
             while j < self.width:
                 if (j, i) == self.entry:
-                    cell = Cell(1, 1, 1, 1, (j, i), " S", True)
+                    cell = Cell(True, True, True, True, (j, i), " S", True)
                 elif (j, i) == self.exit:
-                    cell = Cell(1, 1, 1, 1, (j, i), " E", False)
+                    cell = Cell(True, True, True, True, (j, i), " E", False)
                 else:
-                    cell = Cell(1, 1, 1, 1, (j, i), "  ", False)
+                    cell = Cell(True, True, True, True, (j, i), "  ", False)
                 row.append(cell)
                 j += 1
             self.grid.append(row)
@@ -301,7 +291,7 @@ class Maze():
                 for x, cell in enumerate(row):
 
                     # blue path
-                    def is_p(c):
+                    def is_p(c: Cell) -> bool:
                         return (c.path or "\033[32m" in c.special
                                 or "\033[31m" in c.special)
 
@@ -317,7 +307,7 @@ class Maze():
                     }
 
                     # 42 logic
-                    def is_42(c):
+                    def is_42(c: Cell) -> bool:
                         return "\033[33m" in c.special
 
                     neighs_42 = {
@@ -372,10 +362,10 @@ class Maze():
             for tp in row:
                 if tp == 1:
                     cell = Cell(
-                        1, 1, 1, 1, (0, 0), "42", True)
+                        True, True, True, True, (0, 0), "42", True)
                 if tp == 0:
                     cell = Cell(
-                        1, 1, 1, 1, (0, 0), "  ", False)
+                        True, True, True, True, (0, 0), "  ", False)
                 cell.position = (x, y)
                 r_row.append(cell)
                 x += 1
@@ -418,8 +408,15 @@ class Maze():
         on current_cell's given direction is opened, and the opposite wall
         on next_cell is also opened, keeping the maze data consistent.
         """
+        opposite_dir = {
+            "N": "S",
+            "S": "N",
+            "E": "W",
+            "W": "E"
+        }
         current_cell.open_wall(direction)
-        next_cell.open_wall(OPPOSSITE_DIR[direction])
+        o_d = opposite_dir[direction]
+        next_cell.open_wall(o_d)
 
     def get_neighbours(self, cell: Cell) -> dict:
         """Find all unvisited neighbors of a cell.
@@ -564,14 +561,14 @@ class Maze():
     def stage1(self) -> None:
         start = self.grid[self.entry[1]][self.entry[0]]
         current = start
-        next_cell: Cell = None
+        next_cell: Optional[Cell] = None
         while True:
             if next_cell:
                 current = next_cell
                 next_cell = None
             neighbours = self.get_neighbours(current)
             if len(neighbours) > 0:
-                direction = None
+                # direction = None
                 for dir, cell in list(neighbours.items()):
                     if cell.special == " E":
                         next_cell = cell
@@ -606,7 +603,8 @@ class Maze():
         """Generate the maze by carving passages through the closed grid.
 
         Orchestrates the full generation pipeline: the initial DFS-based
-        wall carving (stage1), connecting disconnected regions (build_the_path),
+        wall carving (stage1),
+        connecting disconnected regions (build_the_path),
         and finalization stages. The result is a fully
         connected maze where every cell is reachable from the entry.
         """
@@ -714,14 +712,6 @@ class Maze():
             self.grid[y][x].path = True
             if self.grid[y][x].special not in [" S", " E", "42"]:
                 self.grid[y][x].special = " P"
-            # cell.path = True
-
-            # for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
-            #     nx, ny = x+dx, y+dy
-
-            #     if (nx, ny) not in visited and maze[nx][ny] == 1:
-            #         visited.add((nx, ny))
-            #         queue.append(((nx, ny), path + [(nx, ny)]))
 
     @staticmethod
     def distance(point_a: tuple[int, int], point_b: tuple[int, int]) -> float:
@@ -732,7 +722,7 @@ class Maze():
     # using the stack after the first stage
     # we have a path, but there is a possibilty of gaps
     # so i need to track them
-    def build_the_path(self):
+    def build_the_path(self) -> None:
         """Ensure continuity of the path accumulated in the generation stack.
 
         Iterates through consecutive cells in the stack produced by the DFS
@@ -797,7 +787,7 @@ class Maze():
         for row in self.grid:
             for cell in row:
                 cell.path = False
-        
+
         start_x, start_y = self.entry
         end_x, end_y = self.exit
         start = self.grid[start_y][start_x]
@@ -808,30 +798,30 @@ class Maze():
 
         while len(queue) > 0:
             current = queue.pop(0)
-        
+
             if current == end:
                 break
 
             x, y = current.position
-            
+
             if not current.n and y - 1 >= 0:
                 neighbour = self.grid[y - 1][x]
                 if neighbour not in came_from:
                     came_from[neighbour] = current
                     queue.append(neighbour)
-            
+
             if not current.e and x + 1 < self.width:
                 neighbour = self.grid[y][x + 1]
                 if neighbour not in came_from:
                     came_from[neighbour] = current
                     queue.append(neighbour)
-            
+
             if not current.s and y + 1 < self.height:
                 neighbour = self.grid[y + 1][x]
                 if neighbour not in came_from:
                     came_from[neighbour] = current
                     queue.append(neighbour)
-            
+
             if not current.w and x - 1 >= 0:
                 neighbour = self.grid[y][x - 1]
                 if neighbour not in came_from:
@@ -844,7 +834,7 @@ class Maze():
             current.path = True
             self.path_cells.append(current)
             current = came_from.get(current)
-        
+
         self.path_cells.reverse()
 
     def animate_path(self, color: str = "\033[0m") -> None:
