@@ -40,7 +40,7 @@ def run_menu(my_maze: Maze, message: str) -> None:
                 cell.special = yellow_square
 
     while True:
-        """Escape sequence to clean terminal screen"""
+        # Escape sequence to clean terminal screen
         print("\033[H\033[J", end="")
         if message != "":
             print(message)
@@ -66,7 +66,7 @@ def run_menu(my_maze: Maze, message: str) -> None:
             my_maze.create_grid()
             if my_maze.height > 6 and my_maze.width > 8:
                 my_maze.insert_forty2(my_maze.ft())
-            my_maze.path_gen()
+            my_maze.maze_gen()
             my_maze.find_shortest_path()
 
             for row in my_maze.grid:
@@ -125,8 +125,7 @@ def main() -> None:
                 my_maze.insert_forty2(my_maze.ft())
             else:
                 message = "Due to the size, 42 logo was omitted"
-            my_maze.path_gen()
-            my_maze.find_shortest_path()
+            my_maze.maze_gen()
             write_into_file(my_maze)
             run_menu(my_maze, message)
 

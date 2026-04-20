@@ -9,9 +9,6 @@ shortest-path computation
 """
 
 import random
-# from time import sleep
-# from functools import wraps
-# from typing import Callable
 import math
 from collections import deque
 import time
@@ -91,12 +88,7 @@ class Cell():
         square when the cell is on the path and the wall is open, white
         corridor '  ' otherwise.
         """
-        # if not wall:
-        #     return "  "
-        # if side == "N" or side == "S":
-        #     return "██"
-        # if side == "E" or side == "W":
-        #     return "██"
+
         blue_square = "\033[34m██\033[0m"
         white_corridor = "\033[47m  \033[0m"
         yellow_square = "\033[33m██\033[0m"
@@ -112,7 +104,6 @@ class Cell():
             return white_corridor
         return "██"
 
-    # @time_slower(0.001)
     def representation(
             self, show_path: bool = False, neigh_path: Optional[dict] = None,
             neigh_42: Optional[dict] = None) -> list:
@@ -285,16 +276,18 @@ class Maze():
             rendered with '··' in their center.
         color: ANSI escape sequence for coloring wall segments.
         """
+        # blue path
+        def is_p(c: Cell) -> bool:
+            return c.path or c.special == " S" or c.special == " E"
+
+        # 42 logic
+        def is_42(c: Cell) -> bool:
+            return c.special == "42" or "\033[33m" in c.special
+
         for y, row in enumerate(self.grid):
             i = 0
             while i < 3:
                 for x, cell in enumerate(row):
-
-                    # blue path
-                    def is_p(c: Cell) -> bool:
-                        return (c.path or "\033[32m" in c.special
-                                or "\033[31m" in c.special)
-
                     neighs_path = {
                         "N": (y > 0 and is_p(self.grid[y-1][x])
                               and is_p(cell)),
@@ -305,10 +298,6 @@ class Maze():
                         "W": (x > 0 and is_p(self.grid[y][x-1])
                               and is_p(cell))
                     }
-
-                    # 42 logic
-                    def is_42(c: Cell) -> bool:
-                        return "\033[33m" in c.special
 
                     neighs_42 = {
                         "N": (y > 0 and is_42(self.grid[y-1][x])
@@ -599,7 +588,7 @@ class Maze():
             self.stack[-1].path = True
 
     # MazeGen actually. my alco algo
-    def path_gen(self) -> None:
+    def maze_gen(self) -> None:
         """Generate the maze by carving passages through the closed grid.
 
         Orchestrates the full generation pipeline: the initial DFS-based
@@ -614,7 +603,8 @@ class Maze():
         # self.stage3()
         if self.perfect is False:
             self.dead_end_open()
-            self.bfs()
+            # self.bfs()
+            self.find_shortest_path()
         # all cells.path = False
         # starting from the start. checking parents
         # if there are two options to go, create a new stack of cells
