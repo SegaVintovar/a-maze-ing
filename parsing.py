@@ -48,8 +48,6 @@ def parsing(data: str) -> dict:
             else:
                 raise ParsingError(f"ParsingError: {row} entry is invalid")
 
-    # check if we have all the parameters and they are correct
-    # validation
     return result
 
 

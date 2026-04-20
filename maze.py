@@ -186,9 +186,9 @@ class Maze():
                         "E": (x < self.width-1 and is_42(self.grid[y][x+1]) and is_42(cell)),
                         "W": (x > 0 and is_42(self.grid[y][x-1]) and is_42(cell))
                     }
-                    
+
                     rep = cell.representation(show_path=show_path, neigh_path=neighs_path, neigh_42=neighs_42)
-                    
+
                     k = 0
                     while k < 3:
                         part = rep[i][k]
@@ -502,6 +502,7 @@ class Maze():
                 if self.grid[y + 1][x].n is False:
                     result.append(self.grid[y + 1][x])
             return result
+        
         start: Cell = self.grid[self.entry[1]][self.entry[0]]
         path = [start]
         queue = deque([(start, path)])
@@ -556,8 +557,6 @@ class Maze():
             a = cell.position
             b = next_stack_cell.position
             if abs(b[0] - a[0]) + abs(b[1] - a[1]) == 1:
-                # if cell.special != " S":
-                #     cell.path = True
                 if cell.position != self.entry:
                     cell.special = " P"
                 next_cell = None
@@ -585,5 +584,3 @@ class Maze():
         for next_cell in neighbours.values():
             if next_cell.special == " E":
                 next_cell.path = True
-        # if len(self.stack) > 0:
-        #     last = self.stack[-1]
