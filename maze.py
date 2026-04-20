@@ -495,6 +495,18 @@ class Maze():
 
     # DFS algo
     def find_shortest_path(self) -> None:
+        """
+        Compute the shortest path from entry to exit using BFS
+
+        Resets all cells' path flags, then performs a breadth-first search
+        starting from the entry cell. Traversal follows open passages only
+        (where walls between cells are absent). Once the exit is reached,
+        the path is reconstructed by walking back through recorded parent
+        pointers
+
+        After completion, cells on the shortest path have path = True, and
+        self.path_cells contains them in order from entry to exit
+        """
         for row in self.grid:
             for cell in row:
                 cell.path = False
@@ -549,6 +561,14 @@ class Maze():
         self.path_cells.reverse()
 
     def animate_path(self, color: str = "\033[0m") -> None:
+        """
+        Animate the drawing of the shortest path cell by cell
+
+        Clears all path flags, then incrementally re-enables them one cell
+        at a time in the order from entry to exit, redrawing the full maze
+        after each step with a small delay. The animation ends with the
+        complete path visible
+        """
         for cell in self.path_cells:
             cell.path = False
 

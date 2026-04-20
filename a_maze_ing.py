@@ -103,6 +103,13 @@ def write_into_file(maze: Maze) -> None:
 
 
 def run_menu(my_maze: Maze) -> None:
+    """
+    Launch the interactive terminal menu for the maze
+
+    Presents a looping menu with options to regenerate the maze, toggle
+    shortest-path display, animate the path, cycle through wall colors,
+    and quit. Redraws the maze after each action to reflect changes
+    """
     show_path = False
 
     colors = [
@@ -177,6 +184,16 @@ def print_grid_of_path(maze: list[list[Cell]]):
 
 
 def main() -> None:
+    """
+    Program entry point: parse arguments, generate maze, launch menu
+
+    Expects exactly one command-line argument — the path to a
+    configuration file. If the argument is missing or invalid, prints
+    an error message and exits. Otherwise, parses the config, builds
+    the maze through the full pipeline (create, embed '42', generate
+    passages, compute path), writes it to the output file, and starts
+    the interactive menu
+    """
     if len(sys.argv) == 2:
         # it can be any file, maybe that ends up on .txt
         if sys.argv[1] == "config.txt":
