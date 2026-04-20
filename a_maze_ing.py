@@ -7,7 +7,7 @@ format written to the output file.
 """
 
 import sys
-from maze_gen import Maze, parsing, InputCheck, ParsingError, write_into_file
+from mazegen import Maze, parsing, InputCheck, ParsingError, write_into_file
 import random
 from pydantic import ValidationError
 
@@ -116,7 +116,7 @@ def main() -> None:
             print("Parsing error: ", str(v.errors()[0]['msg']))
             exit(1)
         except Exception as e:
-            print("Parsing error: ", str(e))
+            print("Could not open the file: ", str(e))
             exit(1)
         try:
             my_maze = Maze(**validated.model_dump())
@@ -133,7 +133,7 @@ def main() -> None:
             print(str(e))
             exit(1)
     else:
-        print("The Amazing reqiuers '<config_file>.txt' as a given parameter")
+        print("The Amazing reqiuers <config_file> as a given parameter")
 
 
 if __name__ == "__main__":
