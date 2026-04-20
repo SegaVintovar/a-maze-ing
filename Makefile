@@ -11,9 +11,9 @@ debug:
 clean:
 	rm -rf __pycache__/
 	rm -rf .mypy_cache/
+	rm -rf virt_env/
 # https://earthly.dev/blog/python-makefile/
 
 lint:
-# 	python3 -m flake8 . we need to make it work
-	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports \
+	flake8 . & mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports \
 	--disallow-untyped-defs --check-untyped-defs

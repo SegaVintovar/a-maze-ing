@@ -1,5 +1,5 @@
-from .maze import Cell, Maze
-from .parsing import parsing, ParsingError, InputCheck
+from ..maze import Cell, Maze
+from ..parsing import parsing, ParsingError, InputCheck
 
 all = [Cell, Maze, parsing, ParsingError, InputCheck]
 

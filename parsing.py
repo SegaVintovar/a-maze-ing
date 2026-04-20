@@ -67,7 +67,7 @@ class InputCheck(BaseModel):
 
     # i can check if the entry and exit are in the grid
     @model_validator(mode="after")
-    def validator(self):
+    def validator(self) -> BaseModel:
         if self.entry == self.exit:
             raise ValueError("Entry and Exit has to be different")
         if self.width < 1 or self.height < 1:

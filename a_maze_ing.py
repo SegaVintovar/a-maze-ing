@@ -1,7 +1,7 @@
 import sys
-from maze import Maze, Cell
-from parsing import parsing, InputCheck, ParsingError
-from os import system
+from maze_gen import Maze, Cell
+from maze_gen import parsing, InputCheck, ParsingError
+# from os import system
 import random
 # from .parsing import InputCheck, ParsingError
 # Bit Direction
@@ -105,15 +105,15 @@ def write_into_file(maze: Maze) -> None:
 
 def run_menu(my_maze: Maze, message: str) -> None:
     show_path = False
-
+    # black, red, green, purple, cyan, dark gray, bright cyan
     colors = [
-        "\033[30m", # black
-        "\033[31m", # red
-        "\033[32m", # green
-        "\033[0;35m", # purple
-        "\033[36m", # cyan
-        "\033[90m", # dark gray
-        "\033[96m"  # bright cyan
+        "\033[30m"
+        "\033[31m",
+        "\033[32m",
+        "\033[0;35m",
+        "\033[36m",
+        "\033[90m",
+        "\033[96m"
         ]
     color_index = 0
 
@@ -177,8 +177,7 @@ def print_grid_of_path(maze: list[list[Cell]]):
 def main() -> None:
     message = ""
     if len(sys.argv) == 2:
-        # it can be any file, maybe that ends up on .txt
-        # 
+        # it can be any file
         try:
             # if sys.argv[1] == r"^.+\.txt$":
             with open(sys.argv[1], "r") as config_file:
