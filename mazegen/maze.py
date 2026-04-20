@@ -857,4 +857,4 @@ class Maze():
             cell.path = True
             print("\033[H\033[J", end="")
             self.print_grid(True, color)
-            time.sleep(0.05)
+            time.sleep(0.1)
