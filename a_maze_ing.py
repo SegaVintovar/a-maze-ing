@@ -1,3 +1,11 @@
+"""
+A-Maze-ing entry point: CLI, file output, and interactive menu glue.
+
+This module wires the parser, the Maze generator, and the terminal UI
+together. It also handles encoding the maze into the hex-per-cell
+format written to the output file.
+"""
+
 import sys
 from maze import Maze, Cell
 from parsing import parsing
@@ -11,6 +19,14 @@ import time
 # 3 West
 
 def decode(cell: Cell) -> str:
+    """
+    Encode a cell's walls into a 4-bit binary string.
+
+    Bit order (MSB -> LSB): West, South, East, North.
+    Each bit is 1 if that wall is closed, 0 if open.
+    The result is a 4-char string like '1011', later converted to hex
+    and written to the maze output file.
+    """
     result = ""
     north = int(cell.n)
     east = int(cell.e)
@@ -23,6 +39,17 @@ def decode(cell: Cell) -> str:
 
 
 def get_right_dir(cell: Cell, maze: Maze) -> tuple[str, Cell] | None:
+    """
+    Return the next step of the path from `cell`, or None if there is none.
+
+    Inspects the four neighbours of `cell` and picks one that:
+      - is on the shortest path (`path is True`),
+      - is not the parent we came from,
+      - is connected to `cell` through an open wall.
+
+    Returns a ("N"|"E"|"S"|"W", Cell) tuple, or None when no such
+    neighbour exists (e.g. at the exit).
+    """
     x, y = cell.position
     # result = ()
     # checing from 4 sides
@@ -52,6 +79,14 @@ def get_right_dir(cell: Cell, maze: Maze) -> tuple[str, Cell] | None:
 
 
 def get_directions(maze: Maze) -> str:
+    """
+    Walk the shortest path from entry to exit and return the moves.
+
+    Starting at the entry cell, repeatedly asks get_right_dir for the
+    next step, concatenating one letter per move ('N', 'E', 'S', 'W').
+    Stops when the exit cell is reached. The result is the string
+    appended to the output file as the solution trail.
+    """
     current = maze.grid[maze.entry[1]][maze.entry[0]]
     result = ""
     next_cell: Cell = None
@@ -79,6 +114,17 @@ def get_directions(maze: Maze) -> str:
 
 
 def write_into_file(maze: Maze) -> None:
+    """
+    Serialise the maze to the configured output file.
+
+    Layout:
+        - grid: one line per row, each cell encoded as a single hex
+          digit whose 4 bits describe the wall state (see decode).
+        - blank line.
+        - entry coordinates as "x, y".
+        - exit coordinates as "x, y".
+        - solution string from get_directions (e.g. "EENNSS").
+    """
     result = ""
     for row in maze.grid:
         for cell in row:
